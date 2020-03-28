@@ -27,13 +27,17 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
     require_once BWG()->plugin_dir . '/frontend/views/BWGView' . $gallery_type . '.php';
     $view_class = 'BWGView' . $gallery_type;
     $this->gallery_view = new $view_class();
+	$theme_row = $params['theme_row'];
 
-    $theme_row = $params['theme_row'];
-
-    $from = (isset($params['from']) ? esc_html($params['from']) : 0);
-
-    $breadcrumb_arr = array( 0 => array('id' => $params['album_gallery_id'], 'page' => isset($_REQUEST['page_number_' . $bwg]) ? (int) $_REQUEST['page_number_' . $bwg] : 1) );
-    $breadcrumb = isset($_REQUEST['bwg_album_breadcrumb_' . $bwg]) ? stripslashes(($_REQUEST['bwg_album_breadcrumb_' . $bwg])) : json_encode($breadcrumb_arr);
+	$from = (isset($params['from']) ? esc_html($params['from']) : 0);
+    $breadcrumb_arr = array(
+		0 => array(
+				'id' => $params['album_gallery_id'],
+				'page' => WDWLibrary::get('page_number_' . $bwg, 1, 'intval')
+			)
+		);
+    $breadcrumb = WDWLibrary::get('bwg_album_breadcrumb_' . $bwg);
+	$breadcrumb = !empty($breadcrumb) ? $breadcrumb : json_encode($breadcrumb_arr);
     $params['breadcrumb_arr'] = json_decode($breadcrumb);
 
     /* Set theme parameters for Gallery/Gallery group title/description.*/
@@ -79,26 +83,26 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
       }
       foreach ( $params['album_gallery_rows']['rows'] as $row ) {
         $href = add_query_arg(array(
-          "type_" . $bwg => $row->def_type,
-          "album_gallery_id_" . $bwg => (($params['album_gallery_id'] != 0) ? $row->alb_gal_id : $row->id),
-		  "bwg_search_" . $bwg => $search_value = !empty($_REQUEST['bwg_search_' . $bwg]) ? trim( esc_html($_REQUEST['bwg_search_' . $bwg]) ) : '',
-        ), $_SERVER['REQUEST_URI']);
+                                "type_" . $bwg => $row->def_type,
+                                "album_gallery_id_" . $bwg => (($params['album_gallery_id'] != 0) ? $row->alb_gal_id : $row->id),
+                              ), $_SERVER['REQUEST_URI']);
+        $href = $this->http_strip_query_param($href, 'bwg_search_' . $bwg);
+        $href = $this->http_strip_query_param($href, 'page_number_' . $bwg);
         $title = '<div class="bwg-title1"><div class="bwg-title2">' . ($row->name ? htmlspecialchars_decode($row->name, ENT_COMPAT | ENT_QUOTES) : '&nbsp;') . '</div></div>';
-
         $resolution_thumb = $row->resolution_thumb;
         $image_thumb_width = '';
         $image_thumb_height = '';
-
-        if($resolution_thumb != "" && strpos($resolution_thumb,'x') !== false) {
+        if ( $resolution_thumb != "" && strpos($resolution_thumb, 'x') !== FALSE ) {
           $resolution_th = explode("x", $resolution_thumb);
           $image_thumb_width = $resolution_th[0];
           $image_thumb_height = $resolution_th[1];
         }
-
+        $enable_seo = (int) BWG()->options->enable_seo;
+        $enable_dynamic_url = (int) BWG()->options->front_ajax;
         ?>
         <div class="bwg-item">
-          <a class="<?php echo $from !== "widget" ? 'bwg-album ' : ''; ?>bwg_album_<?php echo $bwg; ?>"
-             <?php echo (BWG()->options->enable_seo && $from !== "widget" ? "href='" . esc_url($href) . "'" : ""); ?>
+          <a class="bwg-a <?php echo $from !== "widget" ? 'bwg-album ' : ''; ?>bwg_album_<?php echo $bwg; ?>"
+             <?php echo ( ($enable_seo || $enable_dynamic_url) && $from !== "widget" ? "href='" . esc_url($href) . "'" : ""); ?>
              <?php echo $from === "widget" ? 'href="' . $row->permalink . '"' : ''; ?>
              data-container_id="<?php echo $params['container_id']; ?>"
              data-def_type="<?php echo $row->def_type; ?>"
@@ -221,7 +225,6 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
       background-color: #<?php echo $theme_row->album_compact_thumb_bg_color; ?>;
       border: <?php echo $theme_row->album_compact_thumb_border_width; ?>px <?php echo $theme_row->album_compact_thumb_border_style; ?> #<?php echo $theme_row->album_compact_thumb_border_color; ?>;
       opacity: <?php echo number_format($theme_row->album_compact_thumb_transparent / 100, 2, ".", ""); ?>;
-      filter: Alpha(opacity=<?php echo $theme_row->album_compact_thumb_transparent; ?>);
       border-radius: <?php echo $theme_row->album_compact_thumb_border_radius; ?>;
       box-shadow: <?php echo $theme_row->album_compact_thumb_box_shadow; ?>;
     }
@@ -285,7 +288,6 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
         justify-content: center;
         align-content: center;
         flex-direction: column;
-        filter: Alpha(opacity=0);
         opacity: 0;
       }
       <?php

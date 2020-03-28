@@ -236,23 +236,25 @@ class WDWLibraryEmbed {
         parse_str( parse_url( $url, PHP_URL_QUERY ), $my_array_of_vars );
         $matches = array();
         $filename = '';
+		$description = !empty($instagram_data->caption->text) ? $instagram_data->caption->text : '';
         $regex = "/^.*?instagram\.com\/p\/(.*?)[\/]?$/";
         if(preg_match($regex, $url, $matches)){
           $filename = $matches[1];
         }
-        if (!$instagram_data) {
+        if ( !$instagram_data ) {
           $instagram_data = new stdClass();
           $get_embed_data = wp_remote_get("http://api.instagram.com/oembed?url=http://instagram.com/p/".$filename);
           if ( is_wp_error( $get_embed_data ) ) {
             return json_encode(array("error", "cannot get Instagram data"));
           }
-          $result  = json_decode(wp_remote_retrieve_body($get_embed_data));
-          if(empty($result)){
+          $result = json_decode(wp_remote_retrieve_body($get_embed_data));
+          if ( empty($result) ) {
             return json_encode(array("error", wp_remote_retrieve_body($get_embed_data)));
           }
+		  $description = !empty($result->title) ? $result->title : '';
           list($img_width, $img_height) = @getimagesize('https://instagram.com/p/' . $filename . '/media/?size=l');
           $instagram_data->caption = new stdClass();
-          $instagram_data->caption->text = $result->title;
+          $instagram_data->caption->text = $description;
           $instagram_data->images = new stdClass();
           $instagram_data->images->standard_resolution = new stdClass();
           $instagram_data->images->standard_resolution->width = $img_width;
@@ -260,7 +262,7 @@ class WDWLibraryEmbed {
         }
         $embedData = array(
           'name' => '',
-          'description' => htmlspecialchars($instagram_data->caption->text),
+          'description' => htmlspecialchars($description),
           'filename' => $filename,
           'url' => $url,
           'reliative_url' => $url,
@@ -279,7 +281,7 @@ class WDWLibraryEmbed {
       $result = $oembed->fetch( $provider, $url);
       /*no data fetched for a known provider*/
       if(!$result){
-          return json_encode(array("error", "please enter ". $host . " correct single media URL"));
+		return json_encode(array("error", "please enter ". $host . " correct single media URL"));
       }
       else { /*one of known oembed types*/
         $embed_type = 'EMBED_OEMBED_'.$host;
@@ -302,7 +304,7 @@ class WDWLibraryEmbed {
               'filetype' => $embed_type."_VIDEO",
               'date_modified' => date("Y-m-d H:i:s"),
               'resolution' => $result->width." x ".$result->height." px",
-              'resolution_thumb' => $result->width."x".$result->height,
+              'resolution_thumb' => $result->thumbnail_width . " x " . $result->thumbnail_height,
               'redirect_url' => '');
             return json_encode($embedData);
           }
@@ -319,8 +321,8 @@ class WDWLibraryEmbed {
               'size' => '',
               'filetype' => $embed_type."_VIDEO",
               'date_modified' => date("Y-m-d H:i:s"),
-              'resolution' => $result->width." x ".$result->height." px",
-              'resolution_thumb' => $result->width."x".$result->height,
+              'resolution' => $result->thumbnail_width . " x " . $result->thumbnail_height,
+              'resolution_thumb' => $result->thumbnail_width . " x " . $result->thumbnail_height,
               'redirect_url' => '');
 
             return json_encode($embedData);
@@ -348,7 +350,7 @@ class WDWLibraryEmbed {
               'filetype' => $embed_type,
               'date_modified' => date("Y-m-d H:i:s"),
               'resolution' => $result->width." x ".$result->height." px",
-              'resolution_thumb' => $result->width."x".$result->height,
+              'resolution_thumb' => $result->thumbnail_width . " x " . $result->thumbnail_height,
               'redirect_url' => '');
             return json_encode($embedData);
 		      }
@@ -367,7 +369,7 @@ class WDWLibraryEmbed {
               'filetype' => $embed_type."_VIDEO",
               'date_modified' => date("Y-m-d H:i:s"),
               'resolution' => $result->width." x ".$result->height." px",
-              'resolution_thumb' => $result->width."x".$result->height,
+              'resolution_thumb' => $result->thumbnail_width . " x " . $result->thumbnail_height,
               'redirect_url' => '');
 
             return json_encode($embedData);

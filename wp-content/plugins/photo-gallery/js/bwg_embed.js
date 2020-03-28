@@ -16,7 +16,7 @@ function spider_display_embed(embed_type, file_url, embed_id, attrs) {
       for (attr in attrs) {
         if(!(/src/i).test(attr)){
           if(attr != '' && attrs[attr] != ''){
-            oembed_youtube_html += ' '+ attr + '="'+ attrs[attr] + '"';
+            oembed_youtube_html += ' '+ attr + '="' + attrs[attr] + '"';
           }
         }
       }
@@ -27,12 +27,12 @@ function spider_display_embed(embed_type, file_url, embed_id, attrs) {
     case 'EMBED_OEMBED_VIMEO_VIDEO':
       var oembed_vimeo_html ='<iframe ';
       if(embed_id!=''){
-        oembed_vimeo_html += ' src="' + '//player.vimeo.com/video/'+embed_id + '?enablejsapi=1"';
+        oembed_vimeo_html += ' src="' + '//player.vimeo.com/video/' + embed_id + '?enablejsapi=1"';
       }
       for (attr in attrs) {
         if(!(/src/i).test(attr)){
           if(attr != '' && attrs[attr] != ''){
-            oembed_vimeo_html += ' '+ attr + '="'+ attrs[attr] + '"';
+            oembed_vimeo_html += ' '+ attr + '="' + attrs[attr] + '"';
           }
         }
       }

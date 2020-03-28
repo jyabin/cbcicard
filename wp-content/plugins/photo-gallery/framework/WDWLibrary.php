@@ -1,6 +1,7 @@
 <?php
 
 class WDWLibrary {
+
   public static $shortcode_ids = array();
 
   public static $thumb_dimansions;
@@ -10,29 +11,49 @@ class WDWLibrary {
    *
    * @param string $key
    * @param string $default_value
-   * @param bool $esc_html
+   * @param string $callback
    *
    * @return string|array
    */
-  public static function get($key, $default_value = '', $esc_html = true) {
-    if (isset($_GET[$key])) {
-      $value = $_GET[$key];
+  public static function get($key, $default_value = '', $callback = 'sanitize_text_field', $type = 'DEFAULT') {
+    switch ($type) {
+      case 'REQUEST' :
+        if (isset($_REQUEST[$key])) {
+          $value = $_REQUEST[$key];
+        }
+        break;
+      case 'DEFAULT' :
+      case 'POST' :
+        if (isset($_POST[$key])) {
+          $value = $_POST[$key];
+        }
+        if ( 'POST' === $type ) break;
+      case 'GET' :
+        if (isset($_GET[$key])) {
+          $value = $_GET[$key];
+        }
+        break;
     }
-    elseif (isset($_POST[$key])) {
-      $value = $_POST[$key];
+    if ( !isset($value) ) {
+      if( $default_value === NULL ) {
+        return NULL;
+      } else {
+        $value = $default_value;
+      }
     }
-    elseif (isset($_REQUEST[$key])) {
-      $value = $_REQUEST[$key];
+
+    if( is_bool($value) ) {
+      return $value;
     }
-    else {
-      $value = $default_value;
-    }
+
     if (is_array($value)) {
-      array_walk_recursive($value, array('self', 'validate_data'), $esc_html);
+      // $callback should be third parameter of the validate_data function, so there is need to add unused second parameter to validate_data function.
+      array_walk_recursive($value, array('self', 'validate_data'), $callback);
     }
     else {
-      self::validate_data($value, $esc_html);
+      self::validate_data($value, 0, $callback);
     }
+
     return $value;
   }
 
@@ -40,12 +61,13 @@ class WDWLibrary {
    * Validate data.
    *
    * @param $value
-   * @param $esc_html
+   * @param $key
+   * @param $callback
    */
-  private static function validate_data(&$value, $esc_html) {
+  private static function validate_data(&$value, $key, $callback) {
     $value = stripslashes($value);
-    if ($esc_html) {
-      $value = esc_html($value);
+    if ( $callback && function_exists($callback) ) {
+      $value = $callback($value);
     }
   }
 
@@ -486,8 +508,8 @@ class WDWLibrary {
       </span>
     </div>
     <?php if (!$pager) { ?>
-    <input type="hidden" id="page_number"  name="page_number" value="<?php echo ((isset($_POST['page_number'])) ? (int) $_POST['page_number'] : 1); ?>" />
-    <input type="hidden" id="search_or_not" name="search_or_not" value="<?php echo ((isset($_POST['search_or_not'])) ? esc_html($_POST['search_or_not']) : ''); ?>"/>
+    <input type="hidden" id="page_number"  name="page_number" value="<?php echo self::get('page_number', 1, 'intval'); ?>" />
+    <input type="hidden" id="search_or_not" name="search_or_not" value="<?php echo self::get('search_or_not'); ?>"/>
     <?php
     }
   }
@@ -617,8 +639,8 @@ class WDWLibrary {
         }
       ?>
       <span class="pagination-links">
-        <a class="<?php echo $first_page; ?>" title="Go to the first page" onclick="spider_page(<?php echo $page_number; ?>,-2)">«</a>
-        <a class="<?php echo $prev_page; ?>" title="Go to the previous page" onclick="spider_page(<?php echo $page_number; ?>,-1)">‹</a>
+        <a class="bwg-a <?php echo $first_page; ?>" title="Go to the first page" onclick="spider_page(<?php echo $page_number; ?>,-2)">«</a>
+        <a class="bwg-a <?php echo $prev_page; ?>" title="Go to the previous page" onclick="spider_page(<?php echo $page_number; ?>,-1)">‹</a>
         <span class="paging-input">
           <span class="total-pages">
           <input class="current_page" id="current_page" name="current_page" value="<?php echo $page_number; ?>" onkeypress="return check_enter_key(event, this)" title="Go to the page" type="text" size="1" />
@@ -627,16 +649,16 @@ class WDWLibrary {
             <?php echo $items_county; ?>
           </span>
         </span>
-        <a class="<?php echo $next_page ?>" title="Go to the next page" onclick="spider_page(<?php echo $page_number; ?>,1)">›</a>
-        <a class="<?php echo $last_page ?>" title="Go to the last page" onclick="spider_page(<?php echo $page_number; ?>,2)">»</a>
+        <a class="bwg-a <?php echo $next_page ?>" title="Go to the next page" onclick="spider_page(<?php echo $page_number; ?>,1)">›</a>
+        <a class="bwg-a <?php echo $last_page ?>" title="Go to the last page" onclick="spider_page(<?php echo $page_number; ?>,2)">»</a>
         <?php
       }
       ?>
       </span>
     </div>
     <?php if (!$pager) { ?>
-    <input type="hidden" id="page_number" name="page_number" value="<?php echo ((isset($_POST['page_number'])) ? (int) $_POST['page_number'] : 1); ?>" />
-    <input type="hidden" id="search_or_not" name="search_or_not" value="<?php echo ((isset($_POST['search_or_not'])) ? esc_html($_POST['search_or_not']) : ''); ?>"/>
+    <input type="hidden" id="page_number" name="page_number" value="<?php echo self::get('page_number', 1, 'intval'); ?>" />
+    <input type="hidden" id="search_or_not" name="search_or_not" value="<?php echo self::get('search_or_not'); ?>"/>
     <?php
     }
   }
@@ -870,6 +892,26 @@ class WDWLibrary {
 
     return $url;
   }
+
+    /**
+     * Get all google fonts used in themes and options.
+     *
+     * @return string
+     */
+    public static function get_all_google_fonts() {
+      global $wpdb;
+
+      $url = '';
+        $google_fonts = self::get_google_fonts();
+      if ( !empty( $google_fonts )){
+          $query = implode("|", str_replace(' ', '+', $google_fonts));
+
+          $url = 'https://fonts.googleapis.com/css?family=' . $query;
+          $url .= '&subset=greek,latin,greek-ext,vietnamese,cyrillic-ext,latin-ext,cyrillic';
+      }
+
+      return $url;
+    }
 
   public static function get_used_google_fonts($theme = null, $shortcode = null) {
     global $wpdb;
@@ -1205,11 +1247,12 @@ class WDWLibrary {
     $items_in_page = $images_per_page;
     $limit = 0;
     WDWLibrary::bwg_session_start();
-    if ( isset($_REQUEST['page_number_' . $bwg]) && $_REQUEST['page_number_' . $bwg] ) {
-      if ( $_REQUEST['page_number_' . $bwg] > 1 ) {
+    $page_number = self::get('page_number_' . $bwg, 0, 'intval');
+    if ( !empty($page_number) ) {
+      if ( $page_number > 1 ) {
         $items_in_page = $load_more_image_count;
       }
-      $limit = (((int) $_REQUEST['page_number_' . $bwg] - 2) * $items_in_page) + $images_per_page;
+      $limit = ( ($page_number - 2) * $items_in_page ) + $images_per_page;
       $bwg_random_seed = isset($_SESSION['bwg_random_seed_' . $bwg]) ? $_SESSION['bwg_random_seed_' . $bwg] : '';
     }
     else {
@@ -1224,7 +1267,7 @@ class WDWLibrary {
     $join = $tag ? 'LEFT JOIN ' . $wpdb->prefix . 'bwg_image_tag as tag ON image.id=tag.image_id' : '';
     if ( self::get($tag_input_name) ) {
       $join .= ' LEFT JOIN (SELECT GROUP_CONCAT(tag_id SEPARATOR ",") AS tags_combined, image_id FROM  ' . $wpdb->prefix . 'bwg_image_tag' . ($gallery_id ? ' WHERE gallery_id="' . $gallery_id . '"' : '') . ' GROUP BY image_id) AS tags ON image.id=tags.image_id';
-      $where .= ' AND CONCAT(",", tags.tags_combined, ",") REGEXP ",(' . implode("|", $_REQUEST[$tag_input_name]) . ')," ';
+      $where .= ' AND CONCAT(",", tags.tags_combined, ",") REGEXP ",(' . implode("|", self::get($tag_input_name) ) . ')," ';
     }
     $join .= ' LEFT JOIN '. $wpdb->prefix .'bwg_gallery as gallery ON gallery.id = image.gallery_id';
     $where .= ' AND gallery.published = 1 ';
@@ -1232,10 +1275,7 @@ class WDWLibrary {
     $rows = $wpdb->get_results('SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $sort_by) . ' ' . $sort_direction . ' ' . $limit_str);
     $total = $wpdb->get_var('SELECT COUNT(*) FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where);
     $page_nav['total'] = $total;
-    $page_nav['limit'] = 1;
-    if ( isset($_REQUEST['page_number_' . $bwg]) && $_REQUEST['page_number_' . $bwg] ) {
-      $page_nav['limit'] = (int) $_REQUEST['page_number_' . $bwg];
-    }
+    $page_nav['limit'] = self::get('page_number_' . $bwg, 1, 'intval');
     $images = array();
     if ( !empty($rows) ) {
       foreach ( $rows as $row ) {
@@ -1413,6 +1453,7 @@ class WDWLibrary {
       }
 
       $watermark_image_resized = imagecreatetruecolor($watermark_width, $watermark_height);
+      imagecolortransparent($watermark_image_resized, imagecolorat($watermark_image,0,0));
       imagecolorallocatealpha($watermark_image_resized, 255, 255, 255, 127);
       imagealphablending($watermark_image_resized, FALSE);
       imagesavealpha($watermark_image_resized, TRUE);
@@ -1431,6 +1472,7 @@ class WDWLibrary {
       }
       elseif ($type == 3) {
         $image = imagecreatefrompng($original_filename);
+        imagepalettetotruecolor($image);
         imagecopy($image, $watermark_image_resized, $left, $top, 0, 0, $watermark_width, $watermark_height);
         imagealphablending($image, FALSE);
         imagesavealpha($image, TRUE);
@@ -1521,7 +1563,8 @@ class WDWLibrary {
           self::recover_image_size( $width_orig, $height_orig, $width, $original_image, $filename );
           self::recover_image_size( $width_orig, $height_orig, $thumb_width, $original_image, $thumb_filename);
 
-          $resolution_thumb = self::get_thumb_size( $thumb_filename );
+          $resolution_thumb = self::get_thumb_size( $image->thumb_url );
+
           $where = "id = " . $image->id;
           self::update_thumb_dimansions( $resolution_thumb, $where );
         }
@@ -1562,10 +1605,8 @@ class WDWLibrary {
   }
 
   public static function resize_image($source, $destination, $max_width, $max_height) {
-
     $image = wp_get_image_editor( $source );
     if ( ! is_wp_error( $image ) ) {
-
       $image_size = $image->get_size();
       $img_width = $image_size[ 'width' ];
       $img_height = $image_size[ 'height' ];
@@ -1782,7 +1823,7 @@ class WDWLibrary {
     $use_option_defaults = (isset($params['use_option_defaults']) && $params['use_option_defaults'] == 1) ? TRUE : FALSE;
     $from = (isset($params['from']) && $params['from'] == 'widget' ) ? TRUE : FALSE;
     $defaults = array(
-      'gallery_type' => $params['gallery_type'],
+      'gallery_type' => isset($params['gallery_type']) ? $params['gallery_type'] : 'thumbnails',
       'gallery_id' => isset($params['gallery_id']) ? $params['gallery_id'] : 0,
       'gal_title' => isset($params['gal_title']) ? $params['gal_title'] : '',
       'album_id' => isset($params['album_id']) ? $params['album_id'] : 0,
@@ -1792,7 +1833,6 @@ class WDWLibrary {
       'images_per_page' => 0,
       'thumb_width' => BWG()->options->thumb_width,
       'thumb_height' => BWG()->options->thumb_height,
-
       'watermark_type' => (($from) ? BWG()->options->watermark_type : ($use_option_defaults ? BWG()->options->watermark_type : (isset($params['watermark_type']) ? $params['watermark_type'] : 'none'))),
       'watermark_text' => (($from) ? urlencode(BWG()->options->watermark_text) : ($use_option_defaults ? urlencode(BWG()->options->watermark_text) : (isset($params['watermark_text']) ? urlencode($params['watermark_text']) : ''))),
       'watermark_font_size' => (($from) ? BWG()->options->watermark_font_size : ($use_option_defaults ? BWG()->options->watermark_font_size : (isset($params['watermark_font_size']) ? $params['watermark_font_size'] : 12))),
@@ -1808,40 +1848,40 @@ class WDWLibrary {
 
     $defaults['thumb_click_action'] = self::get_option_value('thumb_click_action', 'thumb_click_action', 'thumb_click_action', $from || $use_option_defaults, $params);
     $defaults['thumb_link_target'] = self::get_option_value('thumb_link_target', 'thumb_link_target', 'thumb_link_target', $from || $use_option_defaults, $params);
-    $defaults['popup_fullscreen'] = self::get_option_value('popup_fullscreen', 'popup_fullscreen', 'popup_fullscreen', $from || $use_option_defaults, $params);
+    $defaults['popup_fullscreen'] = (bool) self::get_option_value('popup_fullscreen', 'popup_fullscreen', 'popup_fullscreen', $from || $use_option_defaults, $params);
     $defaults['popup_width'] = self::get_option_value('popup_width', 'popup_width', 'popup_width', $from || $use_option_defaults, $params);
     $defaults['popup_height'] = self::get_option_value('popup_height', 'popup_height', 'popup_height', $from || $use_option_defaults, $params);
     $defaults['popup_effect'] = self::get_option_value('popup_effect', 'popup_effect', 'popup_type', $from || $use_option_defaults, $params);
     $defaults['popup_effect_duration'] = self::get_option_value('popup_effect_duration', 'popup_effect_duration', 'popup_effect_duration', $from || $use_option_defaults, $params);
-    $defaults['popup_autoplay'] = self::get_option_value('popup_autoplay', 'popup_autoplay', 'popup_autoplay', $from || $use_option_defaults, $params);
+    $defaults['popup_autoplay'] = (bool) self::get_option_value('popup_autoplay', 'popup_autoplay', 'popup_autoplay', $from || $use_option_defaults, $params);
     $defaults['popup_interval'] = self::get_option_value('popup_interval', 'popup_interval', 'popup_interval', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_filmstrip'] = self::get_option_value('popup_enable_filmstrip', 'popup_enable_filmstrip', 'popup_enable_filmstrip', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_filmstrip'] = (bool) self::get_option_value('popup_enable_filmstrip', 'popup_enable_filmstrip', 'popup_enable_filmstrip', $from || $use_option_defaults, $params);
     $defaults['popup_filmstrip_height'] = self::get_option_value('popup_filmstrip_height', 'popup_filmstrip_height', 'popup_filmstrip_height', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_ctrl_btn'] = self::get_option_value('popup_enable_ctrl_btn', 'popup_enable_ctrl_btn', 'popup_enable_ctrl_btn', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_fullscreen'] = self::get_option_value('popup_enable_fullscreen', 'popup_enable_fullscreen', 'popup_enable_fullscreen', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_comment'] = self::get_option_value('popup_enable_comment', 'popup_enable_comment', 'popup_enable_comment', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_email'] = self::get_option_value('popup_enable_email', 'popup_enable_email', 'popup_enable_email', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_captcha'] = self::get_option_value('popup_enable_captcha', 'popup_enable_captcha', 'popup_enable_captcha', $from || $use_option_defaults, $params);
-    $defaults['comment_moderation'] = self::get_option_value('comment_moderation', 'comment_moderation', 'comment_moderation', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_info'] = self::get_option_value('popup_enable_info', 'popup_enable_info', 'popup_enable_info', $from || $use_option_defaults, $params);
-    $defaults['popup_info_always_show'] = self::get_option_value('popup_info_always_show', 'popup_info_always_show', 'popup_info_always_show', $from || $use_option_defaults, $params);
-    $defaults['popup_info_full_width'] = self::get_option_value('popup_info_full_width', 'popup_info_full_width', 'popup_info_full_width', $from || $use_option_defaults, $params);
-    $defaults['autohide_lightbox_navigation'] = self::get_option_value('autohide_lightbox_navigation', 'autohide_lightbox_navigation', 'autohide_lightbox_navigation', $from || $use_option_defaults, $params);
-    $defaults['popup_hit_counter'] = self::get_option_value('popup_hit_counter', 'popup_hit_counter', 'popup_hit_counter', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_rate'] = self::get_option_value('popup_enable_rate', 'popup_enable_rate', 'popup_enable_rate', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_fullsize_image'] = self::get_option_value('popup_enable_fullsize_image', 'popup_enable_fullsize_image', 'popup_enable_fullsize_image', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_download'] = self::get_option_value('popup_enable_download', 'popup_enable_download', 'popup_enable_download', $from || $use_option_defaults, $params);
-    $defaults['show_image_counts'] = self::get_option_value('show_image_counts', 'show_image_counts', 'show_image_counts', $from || $use_option_defaults, $params);
-    $defaults['enable_loop'] = self::get_option_value('enable_loop', 'enable_loop', 'enable_loop', $from || $use_option_defaults, $params);
-    $defaults['enable_addthis'] = self::get_option_value('enable_addthis', 'enable_addthis', 'enable_addthis', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_ctrl_btn'] = (bool) self::get_option_value('popup_enable_ctrl_btn', 'popup_enable_ctrl_btn', 'popup_enable_ctrl_btn', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_fullscreen'] = (bool) self::get_option_value('popup_enable_fullscreen', 'popup_enable_fullscreen', 'popup_enable_fullscreen', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_comment'] = (bool) self::get_option_value('popup_enable_comment', 'popup_enable_comment', 'popup_enable_comment', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_email'] = (bool) self::get_option_value('popup_enable_email', 'popup_enable_email', 'popup_enable_email', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_captcha'] = (bool) self::get_option_value('popup_enable_captcha', 'popup_enable_captcha', 'popup_enable_captcha', $from || $use_option_defaults, $params);
+    $defaults['comment_moderation'] = (bool) self::get_option_value('comment_moderation', 'comment_moderation', 'comment_moderation', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_info'] = (bool) self::get_option_value('popup_enable_info', 'popup_enable_info', 'popup_enable_info', $from || $use_option_defaults, $params);
+    $defaults['popup_info_always_show'] = (bool) self::get_option_value('popup_info_always_show', 'popup_info_always_show', 'popup_info_always_show', $from || $use_option_defaults, $params);
+    $defaults['popup_info_full_width'] = (bool) self::get_option_value('popup_info_full_width', 'popup_info_full_width', 'popup_info_full_width', $from || $use_option_defaults, $params);
+    $defaults['autohide_lightbox_navigation'] = (bool) self::get_option_value('autohide_lightbox_navigation', 'autohide_lightbox_navigation', 'autohide_lightbox_navigation', $from || $use_option_defaults, $params);
+    $defaults['popup_hit_counter'] = (bool) self::get_option_value('popup_hit_counter', 'popup_hit_counter', 'popup_hit_counter', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_rate'] = (bool) self::get_option_value('popup_enable_rate', 'popup_enable_rate', 'popup_enable_rate', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_fullsize_image'] = (bool) self::get_option_value('popup_enable_fullsize_image', 'popup_enable_fullsize_image', 'popup_enable_fullsize_image', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_download'] = (bool) self::get_option_value('popup_enable_download', 'popup_enable_download', 'popup_enable_download', $from || $use_option_defaults, $params);
+    $defaults['show_image_counts'] = (bool) self::get_option_value('show_image_counts', 'show_image_counts', 'show_image_counts', $from || $use_option_defaults, $params);
+    $defaults['enable_loop'] = (bool) self::get_option_value('enable_loop', 'enable_loop', 'enable_loop', $from || $use_option_defaults, $params);
+    $defaults['enable_addthis'] = (bool) self::get_option_value('enable_addthis', 'enable_addthis', 'enable_addthis', $from || $use_option_defaults, $params);
     $defaults['addthis_profile_id'] = self::get_option_value('addthis_profile_id', 'addthis_profile_id', 'addthis_profile_id', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_facebook'] = self::get_option_value('popup_enable_facebook', 'popup_enable_facebook', 'popup_enable_facebook', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_twitter'] = self::get_option_value('popup_enable_twitter', 'popup_enable_twitter', 'popup_enable_twitter', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_pinterest'] = self::get_option_value('popup_enable_pinterest', 'popup_enable_pinterest', 'popup_enable_pinterest', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_tumblr'] = self::get_option_value('popup_enable_tumblr', 'popup_enable_tumblr', 'popup_enable_tumblr', $from || $use_option_defaults, $params);
-    $defaults['popup_enable_ecommerce'] = self::get_option_value('popup_enable_ecommerce', 'popup_enable_ecommerce', 'popup_enable_ecommerce', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_facebook'] = (bool) self::get_option_value('popup_enable_facebook', 'popup_enable_facebook', 'popup_enable_facebook', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_twitter'] = (bool) self::get_option_value('popup_enable_twitter', 'popup_enable_twitter', 'popup_enable_twitter', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_pinterest'] = (bool) self::get_option_value('popup_enable_pinterest', 'popup_enable_pinterest', 'popup_enable_pinterest', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_tumblr'] = (bool) self::get_option_value('popup_enable_tumblr', 'popup_enable_tumblr', 'popup_enable_tumblr', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_ecommerce'] = (bool) self::get_option_value('popup_enable_ecommerce', 'popup_enable_ecommerce', 'popup_enable_ecommerce', $from || $use_option_defaults, $params);
 
-    switch ($params['gallery_type']) {
+    switch ($defaults['gallery_type']) {
       case 'thumbnails': {
         $defaults['thumb_width'] = self::get_option_value('thumb_width', 'thumb_width', 'thumb_width', $use_option_defaults, $params);
         $defaults['thumb_height'] = self::get_option_value('thumb_height', 'thumb_height', 'thumb_height', $use_option_defaults, $params);
@@ -1859,6 +1899,7 @@ class WDWLibrary {
         $defaults['showthumbs_name'] = self::get_option_value('showthumbs_name', 'showthumbs_name', 'showthumbs_name', $use_option_defaults, $params);
         $defaults['show_gallery_description'] = self::get_option_value('show_gallery_description', 'show_gallery_description', 'show_gallery_description', $use_option_defaults, $params);
         $defaults['image_title'] = self::get_option_value('image_title', 'image_title', 'image_title_show_hover', $from || $use_option_defaults, $params);
+        $defaults['show_thumb_description'] = self::get_option_value('show_thumb_description', 'show_thumb_description', 'show_thumb_description', $use_option_defaults, $params);
         $defaults['play_icon'] = self::get_option_value('play_icon', 'play_icon', 'play_icon', $use_option_defaults, $params);
         $defaults['gallery_download'] = self::get_option_value('gallery_download', 'gallery_download', 'gallery_download', $use_option_defaults, $params);
         $defaults['ecommerce_icon'] = self::get_option_value('ecommerce_icon_show_hover', 'ecommerce_icon', 'ecommerce_icon_show_hover', $use_option_defaults, $params);
@@ -1868,7 +1909,7 @@ class WDWLibrary {
         $defaults['masonry_hor_ver'] = self::get_option_value('masonry_hor_ver', 'masonry_hor_ver', 'masonry', $use_option_defaults, $params);
         $defaults['show_masonry_thumb_description'] = self::get_option_value('show_masonry_thumb_description', 'show_masonry_thumb_description', 'show_masonry_thumb_description', $use_option_defaults, $params);
         $defaults['thumb_width'] = self::get_option_value('masonry_thumb_size', 'thumb_width', 'masonry_thumb_size', $use_option_defaults, $params);
-        $defaults['thumb_height'] = self::get_option_value('masonry_thumb_size', 'thumb_height', 'masonry_thumb_size', $use_option_defaults, $params);
+        $defaults['thumb_height'] = self::get_option_value('thumb_height', 'thumb_height', 'thumb_height', $use_option_defaults, $params);
         $defaults['image_column_number'] = abs(intval(self::get_option_value('masonry_image_column_number', 'image_column_number', 'masonry_image_column_number', $use_option_defaults, $params)));
         $defaults['image_enable_page'] = self::get_option_value('masonry_image_enable_page', 'image_enable_page', 'masonry_image_enable_page', $use_option_defaults, $params);
         $defaults['images_per_page'] = abs(intval(self::get_option_value('masonry_images_per_page', 'images_per_page', 'masonry_images_per_page', $use_option_defaults, $params)));
@@ -1933,7 +1974,7 @@ class WDWLibrary {
         $defaults['enable_slideshow_music'] = self::get_option_value('enable_slideshow_music', 'enable_slideshow_music', 'slideshow_enable_music', $from || $use_option_defaults, $params);
         $defaults['slideshow_music_url'] = self::get_option_value('slideshow_music_url', 'slideshow_music_url', 'slideshow_audio_url', $from || $use_option_defaults, $params);
         $defaults['slideshow_effect_duration'] = self::get_option_value('slideshow_effect_duration', 'slideshow_effect_duration', 'slideshow_effect_duration', $use_option_defaults, $params);
-        $defaults['slideshow_interval'] = self::get_option_value('slideshow_interval', 'slideshow_interval', 'slideshow_interval', $use_option_defaults, $params);
+        $defaults['slideshow_interval'] = (int) self::get_option_value('slideshow_interval', 'slideshow_interval', 'slideshow_interval', $use_option_defaults, $params);
         $defaults['gallery_download'] = self::get_option_value('slideshow_gallery_download', 'gallery_download', 'slideshow_gallery_download', $use_option_defaults, $params);
 	  }
 	  break;
@@ -2173,7 +2214,7 @@ class WDWLibrary {
     $t_id = $tag->term_id; // Get the ID of the term you're editing
     $term = get_term($t_id, 'bwg_tag');
     ?>
-    <input type="hidden" name="old_tag" value="<?php echo $term->slug ?>">
+    <input type="hidden" name="old_tag" value="<?php echo isset($term->slug) ? $term->slug : ''; ?>" />
     <?php
   }
 
@@ -2282,9 +2323,12 @@ class WDWLibrary {
    *
    * @return bool $addon
    */
-	public static function deactivate_all_addons() {
+	public static function deactivate_all_addons($additional_plugin = FALSE) {
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		$addons = WDWLibrary::get_all_addons_path();
+    if ( $additional_plugin ) {
+      array_push($addons, $additional_plugin);
+    }
 		foreach ( $addons as $addon ) {
 			if( is_plugin_active( $addon ) ) {
 				deactivate_plugins( $addon );
@@ -2383,8 +2427,8 @@ class WDWLibrary {
    */
   public static function get_thumb_size( $thumb_url ) {
     $resolution_thumb = '';
-    if ( !file_exists( BWG()->upload_url.$thumb_url ) ) {
-      $thumb_image = wp_get_image_editor( BWG()->upload_url.$thumb_url );
+    if ( file_exists( BWG()->upload_dir . $thumb_url ) ) {
+      $thumb_image = wp_get_image_editor( BWG()->upload_dir . $thumb_url );
       if ( !is_wp_error( $thumb_image ) ) {
         $get_thumb_size = $thumb_image->get_size();
         $resolution_thumb = $get_thumb_size["width"] . "x" . $get_thumb_size["height"];
@@ -2405,45 +2449,11 @@ class WDWLibrary {
    * @return array
    */
   public static function image_actions( $gallery_type = '' ) {
-    if( $gallery_type == 'google_photos' || $gallery_type == 'instagram' ) {
-      $image_actions = array(
-        'image_edit_alt' => array(
-          'title' => __('Edit Alt/Title', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_edit_description' => array(
-          'title' => __('Edit description', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_edit_redirect' => array(
-          'title' => __('Edit redirect URL', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_add_tag' => array(
-          'title' => __('Add tag', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_publish' => array(
-          'title' => __('Publish', BWG()->prefix),
-          'bulk_action' => __('published', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_unpublish' => array(
-          'title' => __('Unpublish', BWG()->prefix),
-          'bulk_action' => __('unpublished', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_delete' => array(
-          'title' => __('Delete', BWG()->prefix),
-          'bulk_action' => __('deleted', BWG()->prefix),
-          'disabled' => '',
-        ),
-      );
-    } else {
+    if ( $gallery_type == 'google_photos'
+      || $gallery_type == 'instagram' ) {
+      $image_actions = array();
+    }
+    else {
       $image_actions = array(
         'image_resize' => array(
           'title' => __('Resize', BWG()->prefix),
@@ -2475,43 +2485,46 @@ class WDWLibrary {
           'bulk_action' => __('reset', BWG()->prefix),
           'disabled' => '',
         ),
-        'image_edit_alt' => array(
-          'title' => __('Edit Alt/Title', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_edit_description' => array(
-          'title' => __('Edit description', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_edit_redirect' => array(
-          'title' => __('Edit redirect URL', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_add_tag' => array(
-          'title' => __('Add tag', BWG()->prefix),
-          'bulk_action' => __('edited', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_publish' => array(
-          'title' => __('Publish', BWG()->prefix),
-          'bulk_action' => __('published', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_unpublish' => array(
-          'title' => __('Unpublish', BWG()->prefix),
-          'bulk_action' => __('unpublished', BWG()->prefix),
-          'disabled' => '',
-        ),
-        'image_delete' => array(
-          'title' => __('Delete', BWG()->prefix),
-          'bulk_action' => __('deleted', BWG()->prefix),
-          'disabled' => '',
-        ),
       );
     }
+    $image_actions += array(
+      'image_edit_alt' => array(
+        'title' => __('Edit Alt/Title', BWG()->prefix),
+        'bulk_action' => __('edited', BWG()->prefix),
+        'disabled' => '',
+      ),
+      'image_edit_description' => array(
+        'title' => __('Edit description', BWG()->prefix),
+        'bulk_action' => __('edited', BWG()->prefix),
+        'disabled' => '',
+      ),
+      'image_edit_redirect' => array(
+        'title' => __('Edit redirect URL', BWG()->prefix),
+        'bulk_action' => __('edited', BWG()->prefix),
+        'disabled' => '',
+      ),
+      'image_add_tag' => array(
+        'title' => __('Add/Remove tag', BWG()->prefix),
+        'bulk_action' => __('edited', BWG()->prefix),
+        'disabled' => '',
+      ),
+      'image_publish' => array(
+        'title' => __('Publish', BWG()->prefix),
+        'bulk_action' => __('published', BWG()->prefix),
+        'disabled' => '',
+      ),
+      'image_unpublish' => array(
+        'title' => __('Unpublish', BWG()->prefix),
+        'bulk_action' => __('unpublished', BWG()->prefix),
+        'disabled' => '',
+      ),
+      'image_delete' => array(
+        'title' => __('Delete', BWG()->prefix),
+        'bulk_action' => __('deleted', BWG()->prefix),
+        'disabled' => '',
+      ),
+    );
+
     if ( function_exists('BWGEC') ) {
       $image_actions['set_image_pricelist'] = array(
         'title' => __('Add pricelist', BWG()->prefix),
@@ -2535,6 +2548,7 @@ class WDWLibrary {
         case 'jpeg':
         case 'gif':
         case 'png':
+        case 'svg':
           return TRUE;
           break;
       }
@@ -2549,8 +2563,8 @@ class WDWLibrary {
    * @return string Top bar html.
    */
   public static function topbar() {
-    $page = isset($_GET['page']) ? esc_html($_GET['page']) : '';
-    $taxonomy = isset($_GET['taxonomy']) ? esc_html($_GET['taxonomy']) : '';
+    $page = self::get('page');
+    $taxonomy = self::get('taxonomy');
     $user_guide_link = 'https://help.10web.io/hc/en-us/articles/';
     $show_content = true;
     $show_guide_link = true;
@@ -2607,9 +2621,10 @@ class WDWLibrary {
           }
       }
     }
+    $user_guide_link .= BWG()->utm_source;
     $show_content = $show_content && !BWG()->is_pro;
-    $support_forum_link = 'https://wordpress.org/support/plugin/photo-gallery';
-    $premium_link = 'https://10web.io/plugins/wordpress-photo-gallery/?utm_source=photo_gallery&utm_medium=free_plugin';
+    $support_forum_link = 'https://wordpress.org/support/plugin/photo-gallery/#new-post';
+    $premium_link = BWG()->plugin_link . BWG()->utm_source;
     wp_enqueue_style(BWG()->prefix . '-roboto');
     wp_enqueue_style(BWG()->prefix . '-pricing');
     ob_start();
@@ -2636,71 +2651,74 @@ class WDWLibrary {
           <?php
         }
         ?>
-        <div class="bwg-topbar bwg-topbar-links">
-          <div class="bwg-topbar-links-container">
-            <?php
-            if ( $show_guide_link ) {
-              ?>
-              <a href="<?php echo $user_guide_link; ?>" target="_blank">
-                <div class="bwg-topbar-links-item">
-                  <?php _e('User guide', BWG()->prefix); ?>
-                </div>
-              </a>
+        <div class="bwg-topbar_cont">
+          <div class="bwg-topbar bwg-topbar-links">
+            <div class="bwg-topbar-links-container">
               <?php
-            }
-            if (!BWG()->is_pro) {
               if ( $show_guide_link ) {
                 ?>
-              <span class="bwg-topbar-separator"></span>
+                <a href="<?php echo $user_guide_link; ?>" target="_blank" class="bwg-topbar_user_guid">
+                  <div class="bwg-topbar-links-item">
+                    <?php _e('User guide', BWG()->prefix); ?>
+                  </div>
+                </a>
                 <?php
-              }
-              ?>
-              <a href="<?php echo $support_forum_link; ?>" target="_blank">
-                <div class="bwg-topbar-links-item">
-                  <?php _e('Support Forum', BWG()->prefix); ?>
-                </div>
-              </a>
-              <?php
-            }
-           ?>
+              }?>
+            </div>
           </div>
+          <?php
+          if (!BWG()->is_pro) {
+            ?>
+            <div class="bwg-topbar bwg-topbar-links bwg-topbar_support_forum">
+              <div class="bwg-topbar-links-container">
+                <a href="<?php echo $support_forum_link; ?>" target="_blank" class="bwg-topbar_support_forum">
+                  <div class="bwg-topbar-links-item">
+                    <img src="<?php echo  BWG()->plugin_url . '/css/images/help.svg'; ?>" class="help_icon" />
+                    <?php _e('Ask a question', BWG()->prefix); ?>
+                  </div>
+                </a>
+              </div>
+            </div>
+            <?php
+          }
+          ?>
         </div>
       </div>
-      <?php if ( $show_head ) {
-        $menus = array(
-          'manage' => array(
-            'href' => add_query_arg( array('page' => 'manage' . BWG()->menu_postfix ), admin_url('admin.php')),
-            'name' => __('Forms', BWG()->prefix)
-          ),
-          'addons' => array(
-            'href' => add_query_arg( array('page' => 'addons' . BWG()->menu_postfix ), admin_url('admin.php')),
-            'name' => __('Add-ons', BWG()->prefix)
-          ),
-          'pricing' => array(
-            'href' => add_query_arg( array('page' => 'pricing' . BWG()->menu_postfix ), admin_url('admin.php')),
-            'name' => __('Premium Version', BWG()->prefix) .' <span class="bwg-upgrade">' . __('Upgrade', BWG()->prefix) . '</span>'
-          ),
-        );
-        ?>
-        <style>#wpbody-content>div:not(.wrap), .wrap .notice:not(#wd_bp_notice_cont) { display: none; }</style>
-        <div class="bwg-head">
-          <div><img src="<?php echo BWG()->plugin_url . '/images/FormMaker.png'; ?>"></div>
-          <ul class="bwg-breadcrumbs">
-            <?php
-            foreach ( $menus as $key => $item ) {
-              if ( !BWG()->is_free && $key == 'pricing' ) {
-                continue;
-              }
-              ?>
-              <li class="bwg-breadcrumb-item">
-                <a class="bwg-breadcrumb-item-link<?php echo ( $key == $page ) ? ' bwg-breadcrumb-item-link-active' : ''; ?>" href="<?php echo $item['href']; ?>"><?php echo $item['name']; ?></a>
-              </li>
-              <?php
+    <?php if ( $show_head ) {
+      $menus = array(
+        'manage' => array(
+          'href' => add_query_arg( array('page' => 'manage' . BWG()->menu_postfix ), admin_url('admin.php')),
+          'name' => __('Forms', BWG()->prefix)
+        ),
+        'addons' => array(
+          'href' => add_query_arg( array('page' => 'addons' . BWG()->menu_postfix ), admin_url('admin.php')),
+          'name' => __('Add-ons', BWG()->prefix)
+        ),
+        'pricing' => array(
+          'href' => add_query_arg( array('page' => 'pricing' . BWG()->menu_postfix ), admin_url('admin.php')),
+          'name' => __('Premium Version', BWG()->prefix) .' <span class="bwg-upgrade">' . __('Upgrade', BWG()->prefix) . '</span>'
+        ),
+      );
+      ?>
+      <style>#wpbody-content>div:not(.wrap), .wrap .notice:not(#wd_bp_notice_cont) { display: none; }</style>
+      <div class="bwg-head">
+        <div><img src="<?php echo BWG()->plugin_url . '/images/FormMaker.png'; ?>"></div>
+        <ul class="bwg-breadcrumbs">
+          <?php
+          foreach ( $menus as $key => $item ) {
+            if ( BWG()->is_pro && $key == 'pricing' ) {
+              continue;
             }
             ?>
-          </ul>
-        </div>
-      <?php }	?>
+            <li class="bwg-breadcrumb-item">
+              <a class="bwg-breadcrumb-item-link<?php echo ( $key == $page ) ? ' bwg-breadcrumb-item-link-active' : ''; ?>" href="<?php echo $item['href']; ?>"><?php echo $item['name']; ?></a>
+            </li>
+            <?php
+          }
+          ?>
+        </ul>
+      </div>
+    <?php }	?>
     </div>
     <?php
     echo ob_get_clean();
@@ -2838,20 +2856,23 @@ class WDWLibrary {
   }
 
   /**
-   * Pre.
-   *
-   * @param bool $data
-   * @param bool $e
+   * Get gallery allowed types.
+   * @return array
    */
-  public static function pre( $data = FALSE, $e = FALSE ) {
-    $bt = debug_backtrace();
-    $caller = array_shift($bt);
-    print "<pre><xmp>";
-    print_r($data);
-    print "\r\n Called in : " . $caller['file'] . ", At line:" . $caller['line'];
-    echo "</xmp></pre>\n";
-    if ( $e ) {
-      exit;
-    }
+  public static function get_gallery_allowed_types() {
+    $types = array(
+        'thumbnails',
+        'thumbnails_masonry',
+        'thumbnails_mosaic',
+        'slideshow',
+        'image_browser',
+        'blog_style',
+        'carousel',
+        'album_compact_preview',
+        'album_masonry_preview',
+        'album_extended_preview'
+    );
+
+    return $types;
   }
 }

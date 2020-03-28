@@ -240,7 +240,7 @@ function bwg_shortcode_hide_show_params() {
     jQuery("#tr_album_extended_resizable_mosaic").show();
     jQuery("#tr_album_extended_mosaic_total_width").show();
   }
-  if (jQuery('#masonry_0').is(':checked')) {
+  if (jQuery('#thumbnails_masonry').is(':checked')) {
     jQuery("#tr_show_masonry_thumb_description").show();
   }
   bwg_pagination_description(jQuery('input[name=image_enable_page]:checked'));
@@ -376,7 +376,12 @@ function bwg_gallery_type(gallery_type) {
   jQuery("#tr_gallery").css('display', 'none');
   jQuery("#tr_album").css('display', 'none');
   var basic_metabox_title = jQuery('#bwg_basic_metabox_title');
-  basic_metabox_title.text(basic_metabox_title.attr('data-title-gallery'));
+  if( jQuery("#" + gallery_type).attr('class') == 'album_type_radio' ) {
+    basic_metabox_title.text(basic_metabox_title.attr('data-title-album'));
+  }
+  else {
+    basic_metabox_title.text(basic_metabox_title.attr('data-title-gallery'));
+  }
   jQuery("#tr_ecommerce_icon_hover").css('display', 'none');
   jQuery("#tr_ecommerce_icon_hover .ecommerce_icon_show").css('display', 'none');
   jQuery("#tr_tag").css('display', 'none');
@@ -402,7 +407,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_ecommerce_icon_hover .ecommerce_icon_show").css('display', '');  
       jQuery("#tr_tag").css('display', '');
       jQuery("#bwg_pro_version").html('Thumbnails');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").hide();
       jQuery("#insert").attr("style", "visibility: visible;");
       jQuery(".bwg-section.bwg-pro-views").show();
@@ -414,7 +419,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery("#bwg_pro_version").html('Masonry');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/masonry/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/masonry/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").show();
       if ( jQuery(".wd-free-msg").length != 0 ) {
         jQuery("#insert").attr("style", "visibility: hidden;");
@@ -428,7 +433,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery("#bwg_pro_version").html('Mosaic');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/mosaic/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/mosaic/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").show();
       if ( jQuery(".wd-free-msg").length != 0 ) {
         jQuery("#insert").attr("style", "visibility: hidden;");
@@ -441,7 +446,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery("#bwg_pro_version").html('Slideshow');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/slideshow/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/slideshow/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").hide();
       jQuery("#insert").attr("style", "visibility: visible;");
       jQuery(".bwg-section.bwg-pro-views").show();
@@ -452,7 +457,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery("#bwg_pro_version").html('Image browser');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/image-browser/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/image-browser/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").hide();
       jQuery("#insert").attr("style", "visibility: visible;");
       jQuery(".bwg-section.bwg-pro-views").show();
@@ -463,7 +468,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_album").css('display', '');
       basic_metabox_title.text(basic_metabox_title.attr('data-title-album'));
       jQuery("#bwg_pro_version").html('Compuct gallery group');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/compact-album/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/compact-album/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").hide();
       jQuery("#insert").attr("style", "visibility: visible;");
       jQuery(".bwg-section.bwg-pro-views").show();
@@ -473,7 +478,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery('#options_link').attr('href', jQuery('#options_link').attr('data-href') + '&active_tab=2&album_type=' + gallery_type);
       jQuery("#tr_album").css('display', '');
       jQuery("#bwg_pro_version").html('Extended gallery group');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/extended-album/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/extended-album/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").hide();
       jQuery("#insert").attr("style", "visibility: visible;");
       jQuery(".bwg-section.bwg-pro-views").show();
@@ -483,7 +488,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery('#options_link').attr('href', jQuery('#options_link').attr('data-href') + '&active_tab=2&album_type=' + gallery_type);
       jQuery("#tr_album").css('display', '');
       jQuery("#bwg_pro_version").html('Masonry gallery group');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/masonry/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/masonry/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").show();
       if ( jQuery(".wd-free-msg").length != 0 ) {
         jQuery("#insert").attr("style", "visibility: hidden;");
@@ -496,7 +501,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery("#bwg_pro_version").html('Blog style');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/blog-style/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/blog-style/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").show();
       if ( jQuery(".wd-free-msg").length != 0 ) {
         jQuery("#insert").attr("style", "visibility: hidden;");
@@ -509,7 +514,7 @@ function bwg_gallery_type(gallery_type) {
 	  jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery("#bwg_pro_version").html('Carousel');
-      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/carousel/");
+      jQuery("#bwg_pro_version_link").attr("href", "https://demo.10web.io/photo-gallery/carousel/?utm_source=photo_gallery&utm_medium=free_plugin");
       jQuery(".wd-free-msg").show();
       if ( jQuery(".wd-free-msg").length != 0 ) {
         jQuery("#insert").attr("style", "visibility: hidden;");

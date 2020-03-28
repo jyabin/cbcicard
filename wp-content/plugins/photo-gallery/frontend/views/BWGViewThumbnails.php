@@ -41,6 +41,7 @@ class BWGViewThumbnails extends BWGViewSite {
         $data_image_id = '';
         $href = '';
         $title = '<div class="bwg-title1"><div class="bwg-title2">' . ($image_row->alt ? htmlspecialchars_decode($image_row->alt, ENT_COMPAT | ENT_QUOTES) : '&nbsp;') . '</div></div>';
+        $description = '<div class="bwg-thumb-description bwg_thumb_description_0"><span>' . ($image_row->description ? htmlspecialchars_decode($image_row->description, ENT_COMPAT | ENT_QUOTES) : '') . '</span></div>';
         $play_icon = '<div class="bwg-play-icon1"><i title="' . __('Play', BWG()->prefix) . '" class="bwg-icon-play bwg-title2 bwg-play-icon2"></i></div>';
         $ecommerce_icon = '<div class="bwg-ecommerce1"><div class="bwg-ecommerce2">';
         if ( $image_row->pricelist_id ) {
@@ -52,7 +53,7 @@ class BWGViewThumbnails extends BWGViewSite {
         }
         $ecommerce_icon .= '</div></div>';
         if ( $params['thumb_click_action'] == 'open_lightbox' ) {
-          $class = ' class="bwg_lightbox"';
+          $class = ' bwg_lightbox';
           $data_image_id = ' data-image-id="' . $image_row->id . '"';
           if ( BWG()->options->enable_seo ) {
             $href = ' href="' . ($is_embed ? $image_row->thumb_url : BWG()->upload_url . $image_row->image_url) . '"';
@@ -71,10 +72,9 @@ class BWGViewThumbnails extends BWGViewSite {
           $image_thumb_width = $resolution_th[0];
           $image_thumb_height = $resolution_th[1];
         }
-
         ?>
       <div class="bwg-item">
-        <a <?php echo $class; ?><?php echo $data_image_id; ?><?php echo $href; ?>>
+        <a class="bwg-a<?php echo $class; ?>" <?php echo $data_image_id; ?><?php echo $href; ?>>
         <?php if ( $params['image_title'] == 'show' && $theme_row->thumb_title_pos == 'top' ) { echo $title; } ?>
         <div class="bwg-item0 <?php if( $lazyload ) { ?> lazy_loader <?php } ?>">
           <div class="bwg-item1 <?php echo $theme_row->thumb_hover_effect == 'zoom' && $params['image_title'] == 'hover' ? 'bwg-zoom-effect' : ''; ?>">
@@ -96,6 +96,8 @@ class BWGViewThumbnails extends BWGViewSite {
         </div>
         <?php if ( function_exists('BWGEC') && $params['ecommerce_icon'] == 'show' ) { echo $ecommerce_icon; } ?>
         <?php if ( $params['image_title'] == 'show' && $theme_row->thumb_title_pos == 'bottom' ) { echo $title; } ?>
+        <?php
+        if ( isset($params['show_thumb_description']) && $params['show_thumb_description'] ) { echo $description; } ?>
         </a>
       </div>
       <?php
@@ -180,7 +182,6 @@ class BWGViewThumbnails extends BWGViewSite {
       background-color: #<?php echo $theme_row->thumb_bg_color; ?>;
       border: <?php echo $theme_row->thumb_border_width; ?>px <?php echo $theme_row->thumb_border_style; ?> #<?php echo $theme_row->thumb_border_color; ?>;
       opacity: <?php echo number_format($theme_row->thumb_transparent / 100, 2, ".", ""); ?>;
-      filter: Alpha(opacity=<?php echo $theme_row->thumb_transparent; ?>);
       border-radius: <?php echo $theme_row->thumb_border_radius; ?>;
       box-shadow: <?php echo $theme_row->thumb_box_shadow; ?>;
     }
@@ -244,7 +245,6 @@ class BWGViewThumbnails extends BWGViewSite {
       justify-content: center;
       align-content: center;
       flex-direction: column;
-      filter: Alpha(opacity=0);
       opacity: 0;
     }
 	  <?php
@@ -259,6 +259,13 @@ class BWGViewThumbnails extends BWGViewSite {
       padding: <?php echo $theme_row->thumb_title_margin; ?>;
       text-shadow: <?php echo $theme_row->thumb_title_shadow; ?>;
       max-height: 100%;
+    }
+    #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> .bwg-container-<?php echo $bwg; ?>.bwg-standard-thumbnails .bwg-thumb-description span {
+    color: #<?php echo $theme_row->thumb_description_font_color; ?>;
+    font-family: <?php echo $theme_row->thumb_description_font_style; ?>;
+    font-size: <?php echo $theme_row->thumb_description_font_size; ?>px;
+    max-height: 100%;
+    word-wrap: break-word;
     }
     #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> .bwg-container-<?php echo $bwg; ?>.bwg-standard-thumbnails .bwg-play-icon2 {
       font-size: <?php echo 2 * $theme_row->thumb_title_font_size; ?>px;
@@ -275,7 +282,6 @@ class BWGViewThumbnails extends BWGViewSite {
       height: 100%;
       left: -3000px;
       opacity: 0;
-      filter: Alpha(opacity=0);
       position: absolute;
       top: 0;
       width: 100%;

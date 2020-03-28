@@ -44,7 +44,7 @@ class AdminView_bwg {
       <?php echo $id ? ' id="' . $id . '"' : ''; ?>
       <?php echo $class ? ' class="' . $class . '"' : ''; ?>
       <?php echo $style ? ' style="' . $style . '"' : ''; ?>
-    ><h1 class="hidden"></h1><?php
+    ><h1 class="bwg-hidden"></h1><?php
       echo $content;
       // Add nonce to form.
       wp_nonce_field(BWG()->nonce, BWG()->nonce);
@@ -185,7 +185,7 @@ class AdminView_bwg {
    * @return string
    */
   protected function search( $params = array() ) {
-    $search = WDWLibrary::get('s', '');
+    $search = WDWLibrary::get('s', '', 'esc_attr');
     ob_start();
     ?>
     <p class="search-box">
