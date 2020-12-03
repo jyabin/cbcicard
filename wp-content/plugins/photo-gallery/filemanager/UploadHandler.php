@@ -527,7 +527,7 @@ class bwg_UploadHandler {
         $file->error = 'Failed to create scaled version: ' . $failed_versions[0];
         break;
       default:
-        $file->error = 'Failed to create scaled versions: ' . implode($failed_versions, ', ');
+        $file->error = 'Failed to create scaled versions: ' . implode(', ', $failed_versions);
     }
 
     if ( !$file->error ) {
@@ -795,10 +795,10 @@ class bwg_UploadHandler {
     $xml = simplexml_load_file($image);
     $attr = $xml->attributes();
 
-    $size = [
+    $size = array(
       'width' => json_decode($attr->width),
       'height'=> json_decode($attr->height),
-      ];
+    );
 
     return $size;
   }

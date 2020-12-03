@@ -46,6 +46,7 @@ class BWGViewGalleryBox {
       $params['popup_enable_tumblr'] = FALSE;
       $params['popup_enable_email'] = FALSE;
       $params['popup_enable_captcha'] = FALSE;
+      $params['gdpr_compliance'] = FALSE;
       $params['comment_moderation'] = FALSE;
       $params['enable_addthis'] = FALSE;
       $params['addthis_profile_id'] = FALSE;
@@ -76,7 +77,7 @@ class BWGViewGalleryBox {
       }
     }
     $image_rows = $this->model->get_image_rows_data($gallery_id, $bwg, $params['sort_by'], $params['order_by'], $tag);
-    $image_id = WDWLibrary::get('image_id', $current_image_id, 'intval');
+    $image_id = WDWLibrary::get('image_id', $current_image_id, 'intval', 'POST');
     $pricelist_id = 0;
     if ( function_exists('BWGEC') && $params['popup_enable_ecommerce'] == 1 ) {
       $image_pricelist = $this->model->get_image_pricelist($image_id);
@@ -582,7 +583,6 @@ class BWGViewGalleryBox {
     $has_embed = FALSE;
     $data = array();
     foreach ($image_rows as $key => $image_row) {
-
       if ($image_row->id == $image_id) {
         $current_avg_rating = $image_row->avg_rating;
         $current_rate = $image_row->rate;
@@ -614,7 +614,9 @@ class BWGViewGalleryBox {
       $image_resolution = explode(' x ', $image_row->resolution);
       if (is_array($image_resolution)) {
         $instagram_post_width = $image_resolution[0];
-        $instagram_post_height = explode(' ', $image_resolution[1]);
+        if (isset($image_resolution[1])) {
+          $instagram_post_height = explode(' ', $image_resolution[1]);
+        }
         $instagram_post_height = $instagram_post_height[0];
       }
 
@@ -921,9 +923,9 @@ class BWGViewGalleryBox {
                 <span class="bwg_popup_image_spun1" style="display: <?php echo ( !$is_embed ? 'table' : 'block' ); ?>;">
                   <span class="bwg_popup_image_spun2" style="display: <?php echo ( !$is_embed ? 'table-cell' : 'block' ); ?>; ">
                     <?php
-                      if (!$is_embed) {
+                      if ( !$is_embed ) {
                       ?>
-                      <img class="bwg_popup_image bwg_popup_watermark" src="<?php echo BWG()->upload_url . urldecode($image_row->image_url); ?>" alt="<?php echo $image_row->alt; ?>" />
+                      <img class="bwg_popup_image bwg_popup_watermark" src="<?php echo BWG()->upload_url . $image_row->image_url; ?>" alt="<?php echo $image_row->alt; ?>" />
                       <?php
                       }
                       else { /*$is_embed*/ ?>
@@ -947,7 +949,6 @@ class BWGViewGalleryBox {
                             $instagram_post_height = explode(' ', $image_resolution[1]);
                             $instagram_post_height = $instagram_post_height[0];
                           }
-
                           WDWLibraryEmbed::display_embed($image_row->filetype, $image_row->image_url, $image_row->filename, array('class' => "bwg_embed_frame", 'data-width' => $instagram_post_width, 'data-height' => $instagram_post_height, 'frameborder' => "0", 'style' => "width:" . $post_width . "px; height:" . $post_height . "px; vertical-align:middle; display:inline-block; position:relative;"));
                         }
                         else{
@@ -1006,7 +1007,9 @@ class BWGViewGalleryBox {
 				<p><label for="bwg_comment"><?php echo __('Comment', BWG()->prefix); ?> </label></p>
 				<p><textarea class="bwg-validate bwg_comment_textarea" name="bwg_comment" id="bwg_comment"></textarea></p>
 				<p><span class="bwg_comment_error bwg_comment_textarea_error"></span></p>
-              <?php if ( $params['popup_enable_captcha'] ) { ?>
+
+              <?php if ( $params['popup_enable_captcha'] && !$params['gdpr_compliance']) { ?>
+
 				<p><label for="bwg_captcha_input"><?php echo __('Verification Code', BWG()->prefix); ?></label></p>
 				<p>
 					<input id="bwg_captcha_input" name="bwg_captcha_input" class="bwg_captcha_input" type="text" autocomplete="off">
@@ -1047,6 +1050,7 @@ class BWGViewGalleryBox {
 			  <input id="image_id"id="image_id" name="image_id" type="hidden" value="<?php echo $image_id; ?>" />
               <input id="comment_id" name="comment_id" type="hidden" value="" />
               <input type="hidden" value="<?php echo $params['comment_moderation'] ?>" id="bwg_comment_moderation">
+              <input type="hidden" value="<?php echo ($params['gdpr_compliance']) ? 0 : $params['popup_enable_captcha']; ?>" id="bwg_popup_enable_captcha">
             </form>
           <div id="bwg_added_comments">
             <?php
@@ -1324,7 +1328,7 @@ class BWGViewGalleryBox {
       'image_filmstrip_width'                 => $image_filmstrip_width,
       'image_filmstrip_height'                => $image_filmstrip_height,
       'lightbox_info_margin'                  => $theme_row->lightbox_info_margin,
-      'bwg_share_url'                         => add_query_arg(array('curr_url' => $current_url, 'image_id' => ''), WDWLibrary::get_share_page()),
+      'bwg_share_url'                         => add_query_arg(array('curr_url' => urlencode($current_url), 'image_id' => ''), WDWLibrary::get_share_page()),
       'bwg_share_image_url'                   => urlencode(BWG()->upload_url),
       'slideshow_interval'                    => $params['popup_interval'],
       'open_with_fullscreen'                  => $params['popup_fullscreen'],
@@ -1379,7 +1383,7 @@ class BWGViewGalleryBox {
 		<div class="bwg_comment_body_p">
 		  <span class="bwg_comment_body"><?php echo wpautop($row->comment); ?></span>
 		</div>
-	  </div>
+  </div>
     <?php
     return ob_get_clean();
   }

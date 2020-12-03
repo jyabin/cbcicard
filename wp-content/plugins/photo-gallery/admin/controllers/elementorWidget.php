@@ -108,9 +108,6 @@ class BWGElementor extends \Elementor\Widget_Base {
       'bwg_elementor_shortcode',
       [
         'type' => \Elementor\Controls_Manager::HIDDEN,
-        'dynamic' => [
-          'active' => true,
-        ],
         'placeholder' => __( '', 'elementor' ),
         'default' => __( '', 'elementor' ),
       ]

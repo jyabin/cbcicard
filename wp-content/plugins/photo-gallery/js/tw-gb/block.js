@@ -1,6 +1,6 @@
 /**
  * 10Web plugins Gutenberg integration
- * version 2.0.4
+ * version 2.0.6
  */
 ( function ( blocks, element ) {
   registerAllPluginBlocks();
@@ -107,11 +107,11 @@
               }
             }
           }
-          jQuery(".edit-post-layout__content").css({"z-index":"99999","overflow":"visible"});
+          jQuery(".edit-post-layout, .edit-post-layout__content").css({"z-index":"99999","overflow":"visible"});
           var elem = el( 'form', { className: 'tw-container' }, el( 'div', { className: 'tw-container-wrap' + (pluginData.containerClass ? ' ' + pluginData.containerClass : '') }, el( 'span', {
             className: "media-modal-close",
             onClick: close
-          }, el( "span", { className: "media-modal-icon" } ) ), el( 'iframe', { src: pluginData.data.shortcodeUrl + '&callback=' + shortcodeCbName + '&edit=' + shortcode_id } ) ) );
+          }, el( "span", { className: "media-modal-icon" } ) ), el( 'iframe', { src: pluginData.data.shortcodeUrl + '&callback=' + shortcodeCbName + '&edit=' + shortcode_id + '&shortcode=' + shortcode} ) ) );
           return elem;
         }
 
@@ -176,7 +176,7 @@
         }
 
         function close() {
-          jQuery(".edit-post-layout__content").css({"z-index":"0","overflow":"auto"});
+          jQuery(".edit-post-layout, .edit-post-layout__content").css({"z-index":"0","overflow":"auto"});
           props.setAttributes( { popupOpened: false } );
         }
 

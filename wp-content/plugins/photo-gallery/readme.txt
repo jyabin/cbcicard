@@ -2,8 +2,8 @@
 Contributors: webdorado,wdsupport,photogallerysupport,10web
 Tags: gallery, photo gallery, image gallery, responsive gallery, wordpress gallery plugin, photo albums, gallery slider, gallery lightbox, wordpress photo gallery plugin, fullscreen gallery, watermarking, video gallery
 Requires at least: 4.6
-Tested up to: 5.3
-Stable tag: 1.5.49
+Tested up to: 5.5
+Stable tag: 1.5.64
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -281,6 +281,79 @@ Choose whether to display random or the first/last specific number of images.
 **Theme.** Choose the theme, which will be applied to the gallery/album.
 
 == Changelog ==
+
+= 1.5.64 =
+* Fixed: Instagram functionality.
+* Fixed: Images multiline description.
+* Fixed: Minor bugs.
+
+= 1.5.63 =
+* Added: Option to disable get parameter for image URL to allow caching images in CDN.
+* Added: Option to enable/disable GDPR compliance.
+* Fixed: Conflict of blank thumbnails with some themes.
+* Fixed: Watermark opacity.
+* Fixed: Lightbox in Carousel view.
+* Fixed: Quotes in image title.
+* Fixed: Instagram functionality.
+
+= 1.5.62 =
+* Fixed: Minor bug.
+
+= 1.5.61 =
+* Fixed: Conflicts with WP5.5.
+* Fixed: Conflicts with PHP7.4.
+* Fixed: Bug on lightbox fading effect.
+
+= 1.5.60 =
+* Fixed: JS Injection vulnerability.
+
+= 1.5.59 =
+* Added: Thumbnail background color transparency option.
+* Updated: Google fonts list.
+* Fixed: Bug on thumbnails alignment.
+* Fixed: Bug on thumbnail sizes during lazy load.
+* Fixed: Issues with folders and files with space in name.
+
+= 1.5.58 =
+* Improved: Admin pages UX/UI.
+
+= 1.5.56 =
+* Fixed: Security issue.
+
+= 1.5.55 =
+* Fixed: Security issue.
+* Fixed: Minor bug.
+
+= 1.5.54 =
+* Fixed: Memory leak for users with non default uploads directory.
+
+= 1.5.53 =
+* Added: Functionality to duplicate galleries.
+* Added: Possibility to add Gallery title/description to carousel view.
+* Improved: Search UX on options page.
+* Improved: Allow br, ul, li tags in image alt, description and gallery, gallery group description.
+* Fixed: Compatibility for websites hosted on wordpress.com.
+* Fixed: Export/import.
+* Fixed: Google fonts saving.
+* Fixed: Conflict with PHP5.5.
+* Fixed: Text Navigation alignment for Image Browser view.
+* Fixed: Tag filter bug with enabled dynamic URLs.
+* Fixed: Random ordering with enabled dynamic URLs.
+* Fixed: Conflict with Twenty twenty theme.
+* Fixed: Gallery group back for galleries opened with link.
+* Fixed: Link in image description for Blog style view.
+* Fixed: Load more for Masonry view.
+* Fixed: Carousel resize.
+* Fixed: Crop functionality.
+
+= 1.5.52 =
+* Fixed: Minor bug fixed.
+
+= 1.5.51 =
+* Removed: Dismissable notification about new offer by 10Web.
+
+= 1.5.50 =
+* Added: Dismissable notification about new offer by 10Web.
 
 = 1.5.49 =
 * Fixed: Navigation issue in lightbox for images with spaces in name.
