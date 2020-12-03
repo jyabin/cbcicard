@@ -21,7 +21,7 @@
 })(jQuery);
 
 
-jQuery(document).ready(function() {
+jQuery(function() {
 
     jQuery( '#ure_add_role' ).button({
         label: ure_data.add_role
@@ -157,7 +157,7 @@ var ure_main = {
 
     
     caps_refresh_for_group: function (group_id) {
-        var show_deprecated = jQuery('#ure_show_deprecated_caps').attr('checked');
+        var show_deprecated = jQuery('#ure_show_deprecated_caps').prop('checked');
         jQuery('.ure-cap-div').each(function () {
             var el = jQuery(this);
             if (el.hasClass(ure_main.class_prefix + group_id)) {
@@ -209,7 +209,7 @@ var ure_main = {
             ure_main.caps_refresh_for_group( group_id );
         }    
         ure_main.change_caps_columns_quant();
-        jQuery('#granted_only').attr('checked', false);
+        jQuery('#granted_only').prop('checked', false);
     },
     
     
@@ -267,15 +267,15 @@ var ure_main = {
 
 
     show_granted_caps_only: function () {
-        var show_deprecated = jQuery('#ure_show_deprecated_caps').attr('checked');
-        var hide_flag = jQuery('#granted_only').attr('checked');
+        var show_deprecated = jQuery('#ure_show_deprecated_caps').prop('checked');
+        var hide_flag = jQuery('#granted_only').prop('checked');
         jQuery('.ure-cap-div').each(function () {
             var cap_div = jQuery(this);
             if ( !cap_div.hasClass(ure_main.class_prefix + ure_main.selected_group ) ) {    // apply to the currently selected group only
                 return;
             }
             var cap_id = cap_div.attr('id').substr( 12 );        
-            var granted = jQuery('#'+ cap_id).attr('checked');
+            var granted = jQuery('#'+ cap_id).prop('checked');
             if ( granted ) {
                 return;
             }
@@ -296,8 +296,13 @@ var ure_main = {
     
 
     sizes_update: function () {
+        
         var width = jQuery('#ure_caps_td').css('width');
-        jQuery('#ure_caps_list_container').css('width', width);
+        var el = jQuery('#ure_caps_list_container');
+        el.css('width', width);
+        var height = jQuery('#ure_caps_td').css('height');
+        el.css('max-height', height);
+        
     },
 
 
@@ -926,12 +931,21 @@ var ure_main = {
     filter_capabilities: function( cap_id ) {
         var div_list = jQuery('.ure-cap-div');
         for (var i = 0; i < div_list.length; i++) {
-            if (cap_id !== '' && div_list[i].id.substr(11).indexOf(cap_id) !== -1) {
-                jQuery('#'+ div_list[i].id).addClass('ure_tag');
-                div_list[i].style.color = '#27CF27';
+            var el = jQuery('#'+ div_list[i].id);
+            if ( cap_id !== '' ) {
+                if (div_list[i].id.substr(11).indexOf(cap_id) !== -1 ) {
+                    el.addClass('ure_tag');
+                    el.removeClass('filtered');
+                    div_list[i].style.color = '#27CF27';
+                } else {                                    
+                    el.removeClass('ure_tag');
+                    el.addClass('filtered');
+                    div_list[i].style.color = '#000000';
+                }
             } else {
+                el.removeClass('ure_tag');
+                el.removeClass('filtered');
                 div_list[i].style.color = '#000000';
-                jQuery('#'+ div_list[i].id).removeClass('ure_tag');
             }
         }
 
