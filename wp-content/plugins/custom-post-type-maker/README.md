@@ -1,5 +1,7 @@
 # Custom Post Type Maker
 
+![Custom Post Type Maker](https://github.com/Graffino/Custom-Post-Type-Maker/blob/master/assets/banner-1544x500.png)
+
 Custom Post Type Maker lets you create Custom Post Types and custom Taxonomies in a user friendly way. Originally by [Bakhuys](http://www.bakhuys.com/).
 
 ## Description
@@ -26,7 +28,27 @@ Help [translate this plugin](https://translate.wordpress.org/projects/wp-plugins
 
 ## Changelog
 
-## 1.1.8
+## 1.1.13
+
+- Fix translations. Add .pot template file, reported by @wicko77
+
+## 1.1.12
+
+- Remove 'All' from taxonomy names as suggested by @gnowland
+
+## 1.1.11
+
+- Update assets.
+
+## 1.1.10
+
+- Compatibility with future version of WP
+
+### 1.1.9
+
+- Compatibility with future version of WP
+
+### 1.1.8
 
 - Fixes undefined variable (Thanks @richardshea,@kubik101)[#20](https://github.com/Graffino/Custom-Post-Type-Maker/issues/21), [#20](https://github.com/Graffino/Custom-Post-Type-Maker/issues/21)
 
