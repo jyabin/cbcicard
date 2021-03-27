@@ -305,13 +305,13 @@ class WDWLibrary {
    */
   public static function admin_images_ordering_choices() {
     return array(
-      'order_asc' => 'Default sorting',
-      'filename_asc' => 'File name (Asc)',
-      'filename_desc' => 'File name (Desc)',
-      'alt_asc' => 'Alt/Title (Asc)',
-      'alt_desc' => 'Alt/Title (Desc)',
-      'description_asc' => 'Description (Asc)',
-      'description_desc' => 'Description (Desc)',
+      'order_asc' => __('Default sorting', BWG()->prefix),
+      'filename_asc' => __('File name (Asc)', BWG()->prefix),
+      'filename_desc' => __('File name (Desc)', BWG()->prefix),
+      'alt_asc' => __('Alt/Title (Asc)', BWG()->prefix),
+      'alt_desc' => __('Alt/Title (Desc)', BWG()->prefix),
+      'description_asc' => __('Description (Asc)', BWG()->prefix),
+      'description_desc' => __('Description (Desc)', BWG()->prefix),
     );
   }
 
@@ -470,7 +470,7 @@ class WDWLibrary {
       <span class="displaying-num">
         <?php
         if ($count_items != 0) {
-          echo $count_items; ?> <?php echo __('item', BWG()->prefix); ?><?php echo (($count_items == 1) ? '' : 's');
+          printf(_n('%s item', '%s items', $count_items, BWG()->prefix), $count_items);
         }
         ?>
       </span>
@@ -617,7 +617,7 @@ class WDWLibrary {
       <span class="displaying-num">
         <?php
         if ($count_items != 0) {
-          echo $count_items; ?> <?php echo __('item', BWG()->prefix); ?><?php echo (($count_items == 1) ? '' : 's');
+          printf(_n('%s item', '%s items', $count_items, BWG()->prefix), $count_items);
         }
         ?>
       </span>
@@ -1218,15 +1218,42 @@ class WDWLibrary {
     return $id + 1;
   }
 
+  /**
+   * @param        $gallery_id
+   * @param        $bwg
+   * @param        $type
+   * @param        $tag_input_name
+   * @param        $tag
+   * @param        $images_per_page
+   * @param        $load_more_image_count
+   * @param        $sort_by
+   * @param string $sort_direction
+   *
+   * @return array
+   */
   public static function get_image_rows_data( $gallery_id, $bwg, $type, $tag_input_name, $tag, $images_per_page, $load_more_image_count, $sort_by, $sort_direction = 'ASC' ) {
-
+    if ( $images_per_page < 0 ) {
+      $images_per_page = 0;
+    }
+    if ( $load_more_image_count < 0 ) {
+      $load_more_image_count = 0;
+    }
     $gallery_id = (int) $gallery_id;
     $tag = (int) $tag;
     global $wpdb;
     $bwg_search = trim(self::get('bwg_search_' . $bwg));
     $prepareArgs = array();
 
-    $join = '';
+    if ( BWG()->options->front_ajax == "1" ) {
+      $sort_by = trim( WDWLibrary::get('sort_by_' . $bwg, $sort_by ) );
+      $filter_teg = trim( WDWLibrary::get('filter_tag_' . $bwg) );
+
+      if ( !empty($filter_teg) ) {
+        $filter_teg_arr = explode(',', trim($filter_teg));
+        $_REQUEST[$tag_input_name] = $filter_teg_arr;
+      }
+    }
+
     $where = '';
     if ( $bwg_search !== '' ) {
       $bwg_search_keys = explode(' ', $bwg_search);
@@ -1244,6 +1271,7 @@ class WDWLibrary {
       $description_search .= ')';
       $where = 'AND (' . $alt_search . ' OR ' . $description_search . ')';
     }
+
     if ( $sort_by == 'size' || $sort_by == 'resolution' ) {
       $sort_by = ' CAST(image.' . $sort_by . ' AS SIGNED) ';
     }
@@ -1256,24 +1284,23 @@ class WDWLibrary {
     else {
       $sort_by = 'image.' . $sort_by;
     }
+
     $items_in_page = $images_per_page;
     $limit = 0;
-    WDWLibrary::bwg_session_start();
     $page_number = self::get('page_number_' . $bwg, 0, 'intval');
+
     if ( !empty($page_number) ) {
       if ( $page_number > 1 ) {
         $items_in_page = $load_more_image_count;
       }
       $limit = ( ($page_number - 2) * $items_in_page ) + $images_per_page;
-      $bwg_random_seed = isset($_SESSION['bwg_random_seed_' . $bwg]) ? $_SESSION['bwg_random_seed_' . $bwg] : '';
+      $bwg_random_seed = self::get('bwg_random_seed_' . $bwg);
     }
     else {
       $bwg_random_seed = rand();
-      $_SESSION['bwg_random_seed_' . $bwg] = $bwg_random_seed;
+      $GLOBALS['bwg_random_seed_' . $bwg] = $bwg_random_seed;
     }
-    $limit_str = '';
 
-    //$where .= ($gallery_id ? ' AND image.gallery_id = "' . $gallery_id . '" ' : '') . ($tag ? ' AND tag.tag_id = "' . $tag . '" ' : '');
     if($gallery_id) {
       $where .= ' AND image.gallery_id = %d ';
       $prepareArgs[] = $gallery_id;
@@ -1283,41 +1310,76 @@ class WDWLibrary {
       $prepareArgs[] = $tag;
     }
 
-
+    $limit_str = '';
     if ( $images_per_page ) {
       $limit_str .= 'LIMIT %d, %d';
       $prepareArgs[] = $limit;
       $prepareArgs[] = $items_in_page;
     }
 
-
     $join = $tag ? 'LEFT JOIN ' . $wpdb->prefix . 'bwg_image_tag as tag ON image.id=tag.image_id' : '';
-    if ( self::get($tag_input_name) ) {
-      $join .= ' LEFT JOIN (SELECT GROUP_CONCAT(tag_id SEPARATOR ",") AS tags_combined, image_id FROM  ' . $wpdb->prefix . 'bwg_image_tag' . ($gallery_id ? ' WHERE gallery_id="' . $gallery_id . '"' : '') . ' GROUP BY image_id) AS tags ON image.id=tags.image_id';
-      $where .= $wpdb->prepare(' AND CONCAT(",", tags.tags_combined, ",") REGEXP ",%s," ', '(' . implode("|", self::get($tag_input_name) ) . ')');
+
+    $filter_tags_name = self::get($tag_input_name, '', 'sanitize_text_field', 'REQUEST');
+    if ( $filter_tags_name ) {
+      if ( !BWG()->options->tags_filter_and_or ) {
+        // To find images which have at least one from tags filtered by.
+        $compare_sign = "|";
+      }
+      else {
+        // To find images which have all tags filtered by.
+        // For this case there is need to sort tags by ascending to compare with comma.
+        sort($filter_tags_name);
+        $compare_sign = ",";
+      }
+      $join .= ' LEFT JOIN (SELECT GROUP_CONCAT(tag_id order by tag_id SEPARATOR ",") AS tags_combined, image_id FROM  ' . $wpdb->prefix . 'bwg_image_tag' . ($gallery_id ?  $wpdb->prepare(' WHERE gallery_id=%d', $gallery_id) : '') . ' GROUP BY image_id) AS tags ON image.id=tags.image_id';
+      $where .= ' AND CONCAT(",", tags.tags_combined, ",") REGEXP ",(' . implode( $compare_sign, $filter_tags_name ) . ')," ';
     }
+
     $join .= ' LEFT JOIN '. $wpdb->prefix .'bwg_gallery as gallery ON gallery.id = image.gallery_id';
     $where .= ' AND gallery.published = 1 ';
-    $rows = $wpdb->get_results($wpdb->prepare('SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $sort_by) . ' ' . $sort_direction . ' ' . $limit_str, $prepareArgs));
+
+    if ( !empty($prepareArgs) ) {
+      $rows = $wpdb->get_results($wpdb->prepare('SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $sort_by) . ' ' . $sort_direction . ', image.id asc ' . $limit_str, $prepareArgs));
+    }
+    else {
+      $rows = $wpdb->get_results('SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $sort_by) . ' ' . $sort_direction . ', image.id asc ' . $limit_str);
+    }
     if ( $images_per_page ) {
       array_splice($prepareArgs, -2);
     }
-    $total = $wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where, $prepareArgs));
+    if ( !empty($prepareArgs) ) {
+      $total = $wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where, $prepareArgs));
+    }
+    else {
+      $total = $wpdb->get_var('SELECT COUNT(*) FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where);
+    }
+
     $page_nav['total'] = $total;
-    $page_nav['limit'] = self::get('page_number_' . $bwg, 1, 'intval');
+    $page_nav['limit'] = 1;
+    if ( $page_number ) {
+      $page_nav['limit'] = (int) $page_number;
+    }
     $images = array();
+    $thumb_urls = array();
     if ( !empty($rows) ) {
       foreach ( $rows as $row ) {
         $row->pure_image_url = $row->image_url;
         $row->pure_thumb_url = $row->thumb_url;
+        $row->alt = esc_html($row->alt);
         if ( strpos($row->filetype, 'EMBED') === FALSE ) {
-          $row->image_url = self::image_url_version($row->image_url, $row->modified_date);
-          $row->thumb_url = self::image_url_version($row->thumb_url, $row->modified_date);
+            $row->image_url_raw = $row->image_url;
+            $row->image_url = self::image_url_version($row->image_url, $row->modified_date);
+            $row->thumb_url = self::image_url_version($row->thumb_url, $row->modified_date);
+            $thumb_urls[] = BWG()->upload_url . $row->thumb_url;
+        } else {
+            // To disable Jetpack Photon module.
+            $thumb_urls[] = $row->thumb_url;
         }
         $images[] = $row;
       }
     }
-    return array( 'images' => $images, 'page_nav' => $page_nav );
+
+    return array( 'images' => $images, 'page_nav' => $page_nav, 'thumb_urls' => $thumb_urls );
   }
 
   /**
@@ -1921,6 +1983,7 @@ class WDWLibrary {
     $defaults['autohide_lightbox_navigation'] = (bool) self::get_option_value('autohide_lightbox_navigation', 'autohide_lightbox_navigation', 'autohide_lightbox_navigation', $from || $use_option_defaults, $params);
     $defaults['popup_hit_counter'] = (bool) self::get_option_value('popup_hit_counter', 'popup_hit_counter', 'popup_hit_counter', $from || $use_option_defaults, $params);
     $defaults['popup_enable_rate'] = (bool) self::get_option_value('popup_enable_rate', 'popup_enable_rate', 'popup_enable_rate', $from || $use_option_defaults, $params);
+    $defaults['popup_enable_zoom'] = (bool) self::get_option_value('popup_enable_zoom', 'popup_enable_zoom', 'popup_enable_zoom', $from || $use_option_defaults, $params);
     $defaults['popup_enable_fullsize_image'] = (bool) self::get_option_value('popup_enable_fullsize_image', 'popup_enable_fullsize_image', 'popup_enable_fullsize_image', $from || $use_option_defaults, $params);
     $defaults['popup_enable_download'] = (bool) self::get_option_value('popup_enable_download', 'popup_enable_download', 'popup_enable_download', $from || $use_option_defaults, $params);
     $defaults['show_image_counts'] = (bool) self::get_option_value('show_image_counts', 'show_image_counts', 'show_image_counts', $from || $use_option_defaults, $params);
@@ -3074,5 +3137,29 @@ class WDWLibrary {
     $types = array('EMBED_OEMBED_INSTAGRAM_IMAGE', 'EMBED_OEMBED_INSTAGRAM_VIDEO', 'EMBED_OEMBED_INSTAGRAM_POST');
 
     return $types;
+  }
+
+  public static function get_unique_value( $table, $key, $value, $id ) {
+    global $wpdb;
+    $value = ($key == 'slug') ? sanitize_title($value) : $value;
+    if ( $id != 0 ) {
+      $query = $wpdb->prepare("SELECT `" . $key . "` FROM " . $wpdb->prefix . $table . " WHERE `" . $key . "` = %s AND id != %d", $value, $id);
+    }
+    else {
+      $query = $wpdb->prepare("SELECT `" . $key . "` FROM " . $wpdb->prefix . $table . " WHERE `" . $key . "` = %s", $value);
+    }
+
+    if ( $wpdb->get_var($query) ) {
+      $num = 2;
+      do {
+        $alt_name = $value . "-$num";
+        $num++;
+        $slug_check = $wpdb->get_var($wpdb->prepare("SELECT `" . $key . "` FROM " . $wpdb->prefix . $table . " WHERE `" . $key . "` = %s", $alt_name));
+      }
+      while ( $slug_check );
+      $value = $alt_name;
+    }
+
+    return $value;
   }
 }

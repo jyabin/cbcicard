@@ -110,11 +110,6 @@ public function display($params = array(), $bwg = 0) {
     }
     else {
       echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
-      echo '<script id="bwg-script-' . $bwg .'">
-        jQuery(function() {
-          bwg_main_ready();
-        });
-      </script>';
     }
 
     $data = array();
@@ -315,7 +310,7 @@ public function display($params = array(), $bwg = 0) {
                         <?php
                         if ( !$is_embed ) {
                           ?>
-                          <a <?php echo($params['thumb_click_action'] == 'open_lightbox' ? (' class="bwg-a bwg_lightbox"' . (BWG()->options->enable_seo ? ' href="' . ($is_embed ? $image_row->thumb_url : BWG()->upload_url . $image_row->image_url) . '"' : '') . ' data-image-id="' . $image_row->id . '"') : ('class="bwg-a" ' . ($params['thumb_click_action'] == 'redirect_to_url' && $image_row->redirect_url ? 'href="' . $image_row->redirect_url . '" target="' . ($params['thumb_link_target'] ? '_blank' : '') . '"' : ''))); ?>>
+                          <a <?php echo($params['thumb_click_action'] == 'open_lightbox' ? (' class="bwg-a bwg_lightbox"' . (BWG()->options->enable_seo ? ' href="' . ($is_embed ? $image_row->thumb_url : BWG()->upload_url . $image_row->image_url) . '"' : '') . ' data-image-id="' . $image_row->id . '" data-elementor-open-lightbox="no"') : ('class="bwg-a" ' . ($params['thumb_click_action'] == 'redirect_to_url' && $image_row->redirect_url ? 'href="' . $image_row->redirect_url . '" target="' . ($params['thumb_link_target'] ? '_blank' : '') . '"' : ''))); ?>>
                           <img id="bwg_slideshow_image_<?php echo $bwg; ?>"
                                class="skip-lazy bwg_slide bwg_slideshow_image_<?php echo $bwg; ?> <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
                                src="<?php if( !$lazyload ) { echo BWG()->upload_url . $image_row->image_url; } else { echo BWG()->plugin_url."/images/lazy_placeholder.gif"; } ?>"

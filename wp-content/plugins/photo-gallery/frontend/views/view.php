@@ -3,7 +3,16 @@ class BWGViewSite {
 
   public function container($params = array(), $bwg = 0, $content = '') {
     if ( $params['thumb_click_action'] == 'open_lightbox' ) {
-      if ( in_array($params['gallery_row']->gallery_type, array( 'instagram', 'instagram_post' )) ) {
+      // Checking image type is EMBED_OEMBED_INSTAGRAM_POST.
+      $embed_instagram_post = FALSE;
+      if ( !empty($params['image_rows']['images']) ) {
+        $image_filetypes = array_column($params['image_rows']['images'], 'filetype');
+        if ( in_array('EMBED_OEMBED_INSTAGRAM_POST',$image_filetypes) ) {
+          $embed_instagram_post = TRUE;
+        }
+      }
+      if ( $embed_instagram_post || ( isset($params['gallery_row']->gallery_type)
+        && in_array($params['gallery_row']->gallery_type, array( 'instagram', 'instagram_post' )) ) ) {
         if ( !wp_script_is('instagram-embed', 'done') ) {
           wp_print_scripts('instagram-embed');
         }
@@ -75,7 +84,7 @@ class BWGViewSite {
               data-ajax-url="<?php echo add_query_arg(array('action' => 'bwg_frontend_data'), admin_url('admin-ajax.php')); ?>">
           <div id="bwg_container3_<?php echo $bwg; ?>" class="bwg-background bwg-background-<?php echo $bwg; ?>">
             <?php
-            $get_album_gallery_id = WDWLibrary::get("album_gallery_id_" . $bwg);
+            $get_album_gallery_id = WDWLibrary::get("album_gallery_id_" . $bwg, 0, 'intval');
             if ( BWG()->options->front_ajax == "1" && isset($get_album_gallery_id) && intval($get_album_gallery_id) > 0 ) {
               $this->back($params, $bwg);
             }
@@ -144,9 +153,17 @@ class BWGViewSite {
       </div>
     </div>
     <script>
-      jQuery(function() {
-        bwg_main_ready();
+      if (document.readyState === 'complete') {
+        if( typeof bwg_main_ready == 'function' ) {
+          bwg_main_ready();
+        }
+      } else {
+      document.addEventListener('DOMContentLoaded', function() {
+        if( typeof bwg_main_ready == 'function' ) {
+          bwg_main_ready();
+        }
       });
+      }
     </script>
     <?php
   }
@@ -210,7 +227,7 @@ class BWGViewSite {
 
   public function loading($bwg = 0, $image_enable_page = 0, $gallery_type = '' ) {
     $load_type_class = "bwg_loading_div_1";
-      if( ($image_enable_page == 2 || $image_enable_page == 3) ) {
+    if ( ($image_enable_page == 2 || $image_enable_page == 3) ) {
       $load_type_class = "bwg_load_more_ajax_loading";
     }
      ?>
@@ -345,6 +362,7 @@ class BWGViewSite {
       $placeholder = $params['placeholder'];
       $bwg_search = WDWLibrary::get('bwg_search_' . $current_view);
       $type = WDWLibrary::get('type_' . $current_view, 'album');
+      $type = ($type != 'album') ? 'gallery' : 'album';
       if ( $type == 'album' ) {
        $bwg_search = WDWLibrary::get('bwg_album_search_' . $current_view);
       }
@@ -382,7 +400,7 @@ class BWGViewSite {
           <span class="bwg_search_loupe_container1 bwg-hidden">
              <i title="<?php echo __('SEARCH...', BWG()->prefix); ?>" class="bwg-icon-search bwg_search" onclick="bwg_ajax('<?php echo $form_id; ?>', '<?php echo $current_view; ?>', '<?php echo $cur_gal_id; ?>', <?php echo $album_gallery_id; ?>, '', '<?php echo $type; ?>', 1)"></i>
           </span>
-          <input id="bwg_search_input_<?php echo $current_view; ?>" class="bwg_search_input" type="text" onkeypress="bwg_key_press(this); return bwg_check_search_input_enter(this, event);" name="bwg_search_<?php echo $current_view; ?>" value="<?php echo $bwg_search; ?>" placeholder="<?php echo $placeholder; ?>" />
+          <input id="bwg_search_input_<?php echo $current_view; ?>" class="bwg_search_input" type="text" onkeypress="bwg_key_press(this); return bwg_check_search_input_enter(this, event);" name="bwg_search_<?php echo $current_view; ?>" value="<?php echo esc_attr($bwg_search); ?>" placeholder="<?php echo $placeholder; ?>" />
           <span class="bwg_search_reset_container <?echo $bwg_search_reset; ?>">
           <i title="<?php echo __('Reset', BWG()->prefix); ?>" class="bwg-icon-times bwg_reset" onclick="bwg_clear_search_input('<?php echo $current_view; ?>'); <?php echo $bwg_ajax_reset;?> "></i>
         </span>
@@ -408,6 +426,7 @@ class BWGViewSite {
       $sort_by = $params['sort_by'];
       $search_box_width = $params['search_box_width'];
       $type = WDWLibrary::get('type_' . $current_view, 'album');
+      $type = ($type != 'album') ? 'gallery' : 'album';
       $album_gallery_id = WDWLibrary::get('album_gallery_id_' . $current_view, 0, 'intval');
       if ( BWG()->options->front_ajax == "1" ) {
         $sort_by = WDWLibrary::get( 'sort_by_'. $bwg, $sort_by );
@@ -456,6 +475,7 @@ class BWGViewSite {
       $cur_gal_id = $params['container_id'];
       $tags_rows = $params['tags_rows'];
       $type = WDWLibrary::get('type_' . $current_view, 'album');
+      $type = ($type != 'album') ? 'gallery' : 'album';
       $bwg_search_tags = WDWLibrary::get('bwg_tag_id_' . $cur_gal_id, array());
       $get_filter_teg = WDWLibrary::get('filter_tag_' . $bwg);
       if ( BWG()->options->front_ajax == "1" && isset($get_filter_teg) && !empty($get_filter_teg) ) {
@@ -626,7 +646,8 @@ class BWGViewSite {
       $limit = $page_number > 1 ? $items_per_page['load_more_image_count'] : $items_per_page['images_per_page'];
       $limit = $limit ? $limit : 1;
       $type = WDWLibrary::get('type_' . $current_view, $type);
-      $album_gallery_id = WDWLibrary::get('album_gallery_id_' . $current_view, $cur_alb_gal_id);
+      $type = ($type != 'album') ? 'gallery' : 'album';
+      $album_gallery_id = WDWLibrary::get('album_gallery_id_' . $current_view, $cur_alb_gal_id, 'intval');
       if ( $count_items ) {
         if ( $count_items % $limit ) {
           $items_county = ($count_items - $count_items % $limit) / $limit + 1;

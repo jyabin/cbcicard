@@ -174,19 +174,24 @@ class WDWLibraryEmbed {
           $img_width = !empty($media_width) ? $media_width : '640';
           $img_height = !empty($media_height) ? $media_height : '640';
         }
+        else {
+          $result = self::instagram_oembed_connect($url);
+          if ( !empty($result->error) ) {
+            return json_encode($result->error);
+          }
+          $embed_type = 'EMBED_OEMBED_INSTAGRAM_POST';
+          $media_url = base64_encode($result->html);
+          $thumb_url = $result->thumbnail_url;
+          $img_width = $result->thumbnail_width;
+          $img_height = $result->thumbnail_height;
+        }
       }
       // Whole post
       if ( $host == 'INSTAGRAM' && strtolower(substr($url, -4)) == 'post' ) {
         if ( !empty($instagram_data) ) {
-          // oEmbed API 2020 connect.
-          $instagram_oembed_url = 'https://graph.facebook.com/v8.0/instagram_oembed/?url=' . $instagram_data->permalink . '&omitscript=true&access_token=356432828483035|0e211da32da5f501d25541fa10f4d6c0';
-          $get_embed_data = wp_remote_get($instagram_oembed_url);
-          if ( is_wp_error($get_embed_data) ) {
-            return json_encode(array( "error", "cannot get Instagram data" ));
-          }
-          $result = json_decode(wp_remote_retrieve_body($get_embed_data));
-          if ( empty($result) ) {
-            return json_encode(array( "error", wp_remote_retrieve_body($get_embed_data) ));
+          $result = self::instagram_oembed_connect($instagram_data->permalink);
+          if ( !empty($result->error) ) {
+            return json_encode($result->error);
           }
           $embed_type = 'EMBED_OEMBED_INSTAGRAM_POST';
           $media_url = base64_encode($result->html);
@@ -210,7 +215,6 @@ class WDWLibraryEmbed {
         'redirect_url' => '',
         'date_modified' => date("Y-m-d H:i:s"),
       );
-
       return json_encode($embedData);
     }
       $result = $oembed->fetch( $provider, $url);
@@ -222,7 +226,7 @@ class WDWLibraryEmbed {
         $embed_type = 'EMBED_OEMBED_'.$host;
         switch ($embed_type) {
           case 'EMBED_OEMBED_YOUTUBE': {
-            $youtube_regex = "#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+#";
+            $youtube_regex = "#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)+(.*)+#";
             $matches = array();
             preg_match($youtube_regex , $url , $matches);
             $filename = $matches[0];
@@ -372,31 +376,8 @@ class WDWLibraryEmbed {
           $oembed_youtube_html = '<iframe ';
           if ($embed_id != '') {
             $oembed_youtube_query_args = array();
-            if (strpos($embed_id, "?t=") !== FALSE) {
-              $seconds = 0;
-              $start_info = substr($embed_id, (strpos($embed_id, "?t=") + 3), strlen($embed_id));
-              $embed_id = substr($embed_id, 0, strpos($embed_id, "?t="));
-              if (strpos($start_info, "h") !== FALSE) {
-                $hours = substr($start_info, 0, strpos($start_info, "h"));
-                $seconds += $hours * 3600;
-              }
-              if (strpos($start_info, "m") !== FALSE) {
-                if (strpos($start_info, "h") !== FALSE) {
-                  $minutes = substr($start_info, strpos($start_info, "h") + 1, -strpos($start_info, "m"));
-                } else {
-                  $minutes = substr($start_info, 0, strpos($start_info, "m"));
-                }
-                $seconds += $minutes * 60;
-              }
-              if (strpos($start_info, "s") !== FALSE) {
-                if (strpos($start_info, "m") !== FALSE) {
-                  $sec = substr($start_info, strpos($start_info, "m") + 1, -1);
-                } else {
-                  $sec = substr($start_info, 0, -1);
-                }
-                $seconds += $sec;
-              }
-              $oembed_youtube_query_args = array('start' => $seconds);
+            if (strpos($embed_id, "t=") !== FALSE) {
+              $embed_id = str_replace("t=", "start=", $embed_id);
             }
             $oembed_youtube_query_args += array('enablejsapi' => 1, 'wmode' => 'transparent');
             if ($is_visible) {
@@ -912,4 +893,29 @@ class WDWLibraryEmbed {
 			| \xF4[\x80-\x8F][\x80-\xBF]{2}      # plane 16
 		)%xs', '', $string);    
 	}
+
+  /**
+   * Instagram oembed connect.
+   *
+   * @param string $url
+   *
+   * @return false|mixed|string
+   */
+  public static function instagram_oembed_connect( $url = '' ) {
+    // oEmbed API 2020 connect.
+    $data = new stdClass();
+    $instagram_oembed_url = 'https://graph.facebook.com/v9.0/instagram_oembed/?url=' . $url . '&omitscript=true&access_token=356432828483035|0e211da32da5f501d25541fa10f4d6c0';
+    $get_embed_data = wp_remote_get($instagram_oembed_url);
+    if ( is_wp_error($get_embed_data) ) {
+      $data->error = array( 'error', 'Instagram API connect failed.' );
+      return $data;
+    }
+    $data = json_decode(wp_remote_retrieve_body($get_embed_data));
+    if ( empty($data) ) {
+      $data->error = array( 'error', wp_remote_retrieve_body($get_embed_data) );
+      return $data;
+    }
+
+    return $data;
+  }
 }

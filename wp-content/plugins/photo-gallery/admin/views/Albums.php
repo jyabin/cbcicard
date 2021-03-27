@@ -41,7 +41,7 @@ class AlbumsView_bwg extends AdminView_bwg {
 							'add_new_button' => array(
 								'href' => add_query_arg(array( 'page' => $params['page'], 'task' => 'edit' ), admin_url('admin.php')),
 							),
-              'add_new_button_text' => 'Add new group',
+              'add_new_button_text' => __('Add new group', BWG()->prefix),
               'how_to_button' => true,
 						  )
 						);
@@ -318,6 +318,11 @@ class AlbumsView_bwg extends AdminView_bwg {
   }
 
   public function albumgallery_template($albumgallery_row, $template = false) {
+    $edit_url = add_query_arg(array(
+                                'page' => $albumgallery_row->is_album == 0 ? 'galleries_bwg' : 'albums_bwg',
+                                'task' => 'edit',
+                                'current_id' => $albumgallery_row->alb_gal_id,
+                              ), admin_url('admin.php'));
     ob_start();
     if ($template) {
     ?>
@@ -332,7 +337,9 @@ class AlbumsView_bwg extends AdminView_bwg {
               <span class="bwg_move dashicons dashicons-move" title="<?php _e('Drag to re-order', BWG()->prefix); ?>"></span>
             </div>
             <div class="bwg_tab_title_wrap" title="<?php echo $albumgallery_row->name; ?>">
-              <label class="bwg_tab_title" title="<?php echo $albumgallery_row->name; ?>"><?php echo $albumgallery_row->name; ?></label>
+              <a href="<?php echo $edit_url?>" target="_blank">
+                <label class="bwg_tab_title" title="<?php echo $albumgallery_row->name; ?>"><?php echo $albumgallery_row->name; ?></label>
+              </a>
             </div>
           </div>
           <div class="overlay">

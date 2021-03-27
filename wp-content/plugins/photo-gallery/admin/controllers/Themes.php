@@ -229,8 +229,9 @@ class ThemesController_bwg {
    */
   public function edit( $id = 0, $bulk = FALSE ) {
     $reset = WDWLibrary::get('reset', FALSE);
+    $active_tab = WDWLibrary::get('active_tab', 'Thumbnail');
     // Get Theme data.
-    $row = $this->model->get_row_data($id, $reset);
+    $row = $this->model->get_row_data($id, $reset, $active_tab);
 		$current_type = WDWLibrary::get('current_type', 'Thumbnail');
 		$form_action  = add_query_arg( array(
                                 'page' => 'themes_' . BWG()->prefix,
@@ -322,7 +323,6 @@ class ThemesController_bwg {
 			'square' => __('Square', BWG()->prefix),
 		);
 
-		$active_tab = WDWLibrary::get('active_tab', 'Thumbnail');
 
 		$params = array(
 			'id' => $id,
@@ -352,10 +352,12 @@ class ThemesController_bwg {
    * @param int $id
    */
   public function reset( $id = 0 ) {
+    $active_tab = WDWLibrary::get('active_tab', 'Thumbnail');
     WDWLibrary::redirect(add_query_arg(array(
                                          'page' => $this->page,
                                          'task' => 'edit',
                                          'current_id' => $id,
+                                         'active_tab' => $active_tab,
                                          'reset' => '1',
                                        ), admin_url('admin.php')));
   }

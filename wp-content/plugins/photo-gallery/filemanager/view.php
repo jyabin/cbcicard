@@ -227,14 +227,14 @@ class FilemanagerView {
         <div id="uploader">
           <div id="uploader_bg"></div>
           <div class="ctrls_bar ctrls_bar_header">
-            <div class="ctrls_left upload_thumb">
+						<div class="ctrls_left">
+							<span class="dashicons dashicons-arrow-left-alt ctrl_bar_btn" onclick="onBtnBackClick(event, this);" title="<?php echo __('Back', BWG()->prefix); ?>"></span>
+						</div>
+						<div class="ctrls_left upload_thumb">
               <div class="upload_thumb thumb_full_title"><?php _e("Thumbnail Max Dimensions:", BWG()->prefix); ?></div>
               <div class="upload_thumb thumb_title"><?php _e("Thumbnail:", BWG()->prefix); ?></div>
               <input type="text" class="upload_thumb_dim" name="upload_thumb_width" id="upload_thumb_width" value="<?php echo BWG()->options->upload_thumb_width; ?>" /> x
               <input type="text" class="upload_thumb_dim" name="upload_thumb_height" id="upload_thumb_height" value="<?php echo BWG()->options->upload_thumb_height; ?>" /> px
-            </div>
-            <div class="ctrls_right">
-              <span class="dashicons dashicons-arrow-left-alt ctrl_bar_btn" onclick="onBtnBackClick(event, this);" title="<?php echo __('Back', BWG()->prefix); ?>"></span>
             </div>
             <div class="ctrls_right_img upload_thumb">
               <div class="upload_thumb thumb_full_title"><?php _e("Image Max Dimensions:", BWG()->prefix); ?></div>

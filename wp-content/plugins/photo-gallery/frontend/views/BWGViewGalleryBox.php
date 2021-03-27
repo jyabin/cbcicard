@@ -796,6 +796,8 @@ class BWGViewGalleryBox {
           <i title="<?php echo __('Show comments', BWG()->prefix); ?>" class="bwg-icon-comment-square bwg_ctrl_btn bwg_comment"></i>
           <?php } if ($params['popup_enable_rate']) { ?>
           <i title="<?php echo __('Show rating', BWG()->prefix); ?>" class="bwg-icon-<?php echo $theme_row->lightbox_rate_icon; ?> bwg_ctrl_btn bwg_rate"></i>
+          <?php } if ($params['popup_enable_zoom']) { ?>
+          <i title="<?php echo __('Zoom in-out', BWG()->prefix); ?>" class="bwg-icon-search bwg_ctrl_btn bwg_zoom"></i>
           <?php }
           $is_embed = preg_match('/EMBED/', $current_filetype) == 1 ? TRUE : FALSE;
           $share_image_url = str_replace(array('%252F', '%25252F'), '%2F', urlencode( $is_embed ? $current_thumb_url : BWG()->upload_url . rawurlencode($current_image_url)));
@@ -808,7 +810,7 @@ class BWGViewGalleryBox {
           }
           if ($params['popup_enable_twitter']) {
             ?>
-            <a id="bwg_twitter_a" href="https://twitter.com/share?url=<?php echo urlencode($current_url . '#bwg' . $gallery_id . '/' . $current_image_id); ?>" target="_blank" title="<?php echo __('Share on Twitter', BWG()->prefix); ?>">
+            <a id="bwg_twitter_a" href="https://twitter.com/share?url=<?php echo urlencode($share_url); ?>" target="_blank" title="<?php echo __('Share on Twitter', BWG()->prefix); ?>">
               <i title="<?php echo __('Share on Twitter', BWG()->prefix); ?>" class="bwg-icon-twitter-square bwg_ctrl_btn bwg_twitter"></i>
             </a>
             <?php
@@ -829,7 +831,7 @@ class BWGViewGalleryBox {
           }
           if ($params['popup_enable_fullsize_image']) {
             ?>
-            <a id="bwg_fullsize_image" href="<?php echo !$is_embed ? BWG()->upload_url . urldecode($current_image_url) : urldecode($current_image_url); ?>" target="_blank">
+            <a id="bwg_fullsize_image" href="<?php echo !$is_embed ? BWG()->upload_url . urldecode($current_image_url) : urldecode($current_image_url); ?>" data-elementor-open-lightbox="no"  target="_blank">
               <i title="<?php echo __('Open image in original size.', BWG()->prefix); ?>" class="bwg-icon-sign-out bwg_ctrl_btn"></i>
             </a>
             <?php
@@ -925,7 +927,9 @@ class BWGViewGalleryBox {
                     <?php
                       if ( !$is_embed ) {
                       ?>
+                        <figure class="bwg_popup_image bwg_popup_watermark" style='background-image: url("<?php echo BWG()->upload_url . $image_row->image_url; ?>")'>
                       <img class="bwg_popup_image bwg_popup_watermark" src="<?php echo BWG()->upload_url . $image_row->image_url; ?>" alt="<?php echo $image_row->alt; ?>" />
+                        </figure>
                       <?php
                       }
                       else { /*$is_embed*/ ?>
@@ -1309,6 +1313,7 @@ class BWGViewGalleryBox {
       'lightbox_close_btn_top'                => $theme_row->lightbox_close_btn_top,
       'lightbox_close_btn_right'              => $theme_row->lightbox_close_btn_right,
       'popup_enable_rate'                     => $params['popup_enable_rate'],
+      'popup_enable_zoom'                     => $params['popup_enable_zoom'],
       'lightbox_filmstrip_thumb_border_width' => $theme_row->lightbox_filmstrip_thumb_border_width,
       'width_or_height'                       => $width_or_height,
       'preload_images'                        => BWG()->options->preload_images,

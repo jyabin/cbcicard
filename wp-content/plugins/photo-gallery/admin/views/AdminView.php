@@ -74,7 +74,7 @@ class AdminView_bwg {
     $add_new_button = !empty($params['add_new_button']) ? $params['add_new_button'] : '';
     $how_to_button = !empty($params['how_to_button']) ? $params['how_to_button'] : false;
     $buttons = !empty($params['buttons']) ? $params['buttons'] : false;
-    $add_new_button_text = !empty($params['add_new_button_text']) ? $params['add_new_button_text'] : 'Add new';
+    $add_new_button_text = !empty($params['add_new_button_text']) ? $params['add_new_button_text'] : __('Add new', BWG()->prefix);
     $popup_window = !empty($params['popup_window']) ? false : true;
 
     $attributes = '';
@@ -105,7 +105,7 @@ class AdminView_bwg {
           if ( $add_new_button ) {
             ?>
             <a class="page-title-action" <?php echo $attributes; ?>>
-              <?php _e( $add_new_button_text, BWG()->prefix); ?>
+              <?php echo $add_new_button_text; ?>
             </a>
             <?php
           }

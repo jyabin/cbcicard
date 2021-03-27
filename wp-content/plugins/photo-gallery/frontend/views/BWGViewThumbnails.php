@@ -19,11 +19,6 @@ class BWGViewThumbnails extends BWGViewSite {
     }
     else {
       echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
-      echo '<script id="bwg-script-' . $bwg .'">
-        jQuery(function() {
-          bwg_main_ready();
-        });
-      </script>';
     }
     ob_start();
     ?>
@@ -75,7 +70,7 @@ class BWGViewThumbnails extends BWGViewSite {
         }
         ?>
       <div class="bwg-item">
-        <a class="bwg-a<?php echo $class; ?>" <?php echo $data_image_id; ?><?php echo $href; ?>>
+        <a class="bwg-a<?php echo $class; ?>" <?php echo $data_image_id; ?><?php echo $href; ?> data-elementor-open-lightbox="no" >
         <?php if ( $params['image_title'] == 'show' && $theme_row->thumb_title_pos == 'top' ) { echo $title; } ?>
         <div class="bwg-item0 <?php if( $lazyload ) { ?> lazy_loader <?php } ?>">
           <div class="bwg-item1 <?php echo $theme_row->thumb_hover_effect == 'zoom' && $params['image_title'] == 'hover' ? 'bwg-zoom-effect' : ''; ?>">

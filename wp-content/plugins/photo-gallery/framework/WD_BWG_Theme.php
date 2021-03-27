@@ -543,7 +543,7 @@ class WD_BWG_Theme {
   public $thumb_bg_transparency = 30;
   public $thumbs_bg_color = "FFFFFF";
 
-  public function __construct($id = 0, $reset = false, $predefined_version = false) {
+  public function __construct($id = 0, $reset = false, $predefined_version = false, $active_tab = 'Thumbnail') {
     if ( !$id || $predefined_version ) {
       unset($this->id);
       unset($this->name);
@@ -1078,18 +1078,31 @@ class WD_BWG_Theme {
       if ( $reset ) {
         if ( !$row->default_theme ) {
           // Reset theme to default theme values.
-          $row_id = $row->id;
-          $row_name = $row->name;
-          $row = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'bwg_theme WHERE default_theme="%d"', 1));
-          $row->id = $row_id;
-          $row->name = $row_name;
+          $row_current = json_decode($row->options);
+          $row_default = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'bwg_theme WHERE default_theme="%d"', 1));
+
+          $obj_prefix = $this->get_object_prefix( $active_tab );
+          if ( !empty($row_default) && $row_default->options ) {
+            $themes = json_decode($row_default->options);
+            foreach ( $themes as $key => $value ) {
+              if ( 0 ===  strpos($key, $obj_prefix) ) {
+                $row_current->$key = $value;
+              }
+            }
+          }
+          $row->options = json_encode($row_current);
         }
         else {
           // Reset default theme.
-          $this->id = $row->id;
-          $this->name = $row->name;
-          $this->default_theme = $row->default_theme;
-
+          $obj_prefix = $this->get_object_prefix( $active_tab );
+          if ( !empty($row) && $row->options ) {
+            $themes = json_decode($row->options);
+            foreach ( $themes as $key => $value ) {
+              if ( 0 !==  strpos($key, $obj_prefix) ) {
+                $this->$key = $themes->$key;
+              }
+            }
+          }
           return;
         }
       }
@@ -1107,6 +1120,55 @@ class WD_BWG_Theme {
         $this->default_theme = $row->default_theme;
       }
     }
+  }
+  /**
+   * Get prefix of theme fields object
+   *
+   * @param string $active_tab active tab name
+   *
+   * @return string
+  */
+  public function get_object_prefix( $active_tab ) {
+    $obj_start = '';
+    switch ( $active_tab ) {
+      case 'Thumbnail':
+        $obj_start = 'thumb_';
+        break;
+      case 'Masonry':
+        $obj_start = 'masonry_';
+        break;
+      case 'Mosaic':
+        $obj_start = 'mosaic_';
+        break;
+      case 'Slideshow':
+        $obj_start = 'slideshow_';
+        break;
+      case 'Image_browser':
+        $obj_start = 'image_browser_';
+        break;
+      case 'Compact_album':
+        $obj_start = 'album_compact_';
+        break;
+      case 'Masonry_album':
+        $obj_start = 'album_masonry_';
+        break;
+      case 'Extended_album':
+        $obj_start = 'album_extended_';
+        break;
+      case 'Blog_style':
+        $obj_start = 'blog_style_';
+        break;
+      case 'Lightbox':
+        $obj_start = 'lightbox_';
+        break;
+      case 'Navigation':
+        $obj_start = 'page_nav_';
+        break;
+      case 'Carousel':
+        $obj_start = 'carousel_';
+        break;
+    }
+    return $obj_start;
   }
 
   /* get theme font style google or default */

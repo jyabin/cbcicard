@@ -29,7 +29,7 @@ class BWGControllerSite {
       if ($sort_by == 'random') {
         $params['sort_by'] = 'RAND()';
       } else {
-        if (in_array($sort_by, array('default', 'filename', 'size'))) {
+        if (in_array($sort_by, array('default', 'alt', 'date', 'filename', 'size'))) {
           $params['sort_by'] = $sort_by;
         }
       }
@@ -273,6 +273,7 @@ class BWGControllerSite {
         $params['container_id'] = 'bwg_' . $params['gallery_type'] . '_' . $bwg;
         $params['masonry_hor_ver'] = BWG()->options->masonry;
         $params['show_masonry_thumb_description'] = BWG()->options->show_masonry_thumb_description;
+        $params['show_thumb_description'] = BWG()->options->show_thumb_description;
 
         $gallery_row = $this->model->get_gallery_row_data($params['gallery_id']);
 
@@ -286,7 +287,7 @@ class BWGControllerSite {
         if ('xml_sitemap' == $from_shortcode) {
           $params['images_per_page'] = 0;
         }
-        $params['image_rows'] = $this->model->get_image_rows_data($params['gallery_id'], $bwg, $params['type'], 'bwg_tag_id_bwg_' . $params['gallery_type'] . '_' . $bwg, $params['tag'], $params['images_per_page'], $params['load_more_image_count'], $params['sort_by'], $params['order_by']);
+        $params['image_rows'] = WDWLibrary::get_image_rows_data($params['gallery_id'], $bwg, $params['type'], 'bwg_tag_id_bwg_' . $params['gallery_type'] . '_' . $bwg, $params['tag'], $params['images_per_page'], $params['load_more_image_count'], $params['sort_by'], $params['order_by']);
         if ('xml_sitemap' == $from_shortcode) {
           return $params['image_rows']['images'];
         }
@@ -336,7 +337,7 @@ class BWGControllerSite {
       if ('xml_sitemap' == $from_shortcode) {
         $params['images_per_page'] = 0;
       }
-      $params['image_rows'] = $this->model->get_image_rows_data($params['gallery_id'], $bwg, $params['type'], 'bwg_tag_id_bwg_' . $params['gallery_type'] . '_' . $bwg, $params['tag'], $params['images_per_page'], $params['load_more_image_count'], $params['sort_by'], $params['order_by']);
+      $params['image_rows'] = WDWLibrary::get_image_rows_data($params['gallery_id'], $bwg, $params['type'], 'bwg_tag_id_bwg_' . $params['gallery_type'] . '_' . $bwg, $params['tag'], $params['images_per_page'], $params['load_more_image_count'], $params['sort_by'], $params['order_by']);
       if ('xml_sitemap' == $from_shortcode) {
         return $params['image_rows']['images'];
       }

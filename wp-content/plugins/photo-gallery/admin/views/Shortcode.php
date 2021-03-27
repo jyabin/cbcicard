@@ -1624,6 +1624,12 @@ class ShortcodeView_bwg extends AdminView_bwg {
               else {
                 jQuery("#popup_enable_rate_0").prop('checked', true);
               }
+              if (short_code['popup_enable_zoom'] == 1 && short_code['popup_enable_zoom']) {
+                jQuery("#popup_enable_zoom_1").prop('checked', true);
+              }
+              else {
+                jQuery("#popup_enable_zoom_0").prop('checked', true);
+              }
               if (short_code['popup_enable_fullsize_image'] == 1) {
                 jQuery("#popup_enable_fullsize_image_1").prop('checked', true);
               }
@@ -2124,6 +2130,7 @@ class ShortcodeView_bwg extends AdminView_bwg {
         tagtext += ' autohide_lightbox_navigation="' + jQuery("input[name=autohide_lightbox_navigation]:checked").val() + '"';
         tagtext += ' popup_hit_counter="' + jQuery("input[name=popup_hit_counter]:checked").val() + '"';
         tagtext += ' popup_enable_rate="' + jQuery("input[name=popup_enable_rate]:checked").val() + '"';
+        tagtext += ' popup_enable_zoom="' + jQuery("input[name=popup_enable_zoom]:checked").val() + '"';
         tagtext += ' popup_enable_fullsize_image="' + jQuery("input[name=popup_enable_fullsize_image]:checked").val() + '"';
         tagtext += ' popup_enable_download="' + jQuery("input[name=popup_enable_download]:checked").val() + '"';
         tagtext += ' show_image_counts="' + jQuery("input[name=show_image_counts]:checked").val() + '"';
@@ -2160,7 +2167,7 @@ class ShortcodeView_bwg extends AdminView_bwg {
           // If there is no builder, then shortcode replace to image.
           if( !page_builder_activated ) {
             short_code = short_code.replace(/\[Best_Wordpress_Gallery([^\]]*)\]/g, function (d, c) {
-              return "<img src='<?php echo BWG()->plugin_url; ?>/images/icons/gallery-icon.png' class='bwg_shortcode mceItem' title='Best_Wordpress_Gallery" + short_id + "' />";
+              return "<img src='<?php echo BWG()->plugin_url; ?>/images/tw-gb/shortcode_new.jpg' class='bwg_shortcode mceItem' title='Best_Wordpress_Gallery" + short_id + "' />";
             });
           }
         }

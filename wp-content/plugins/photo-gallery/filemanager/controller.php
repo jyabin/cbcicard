@@ -45,9 +45,8 @@ class FilemanagerController {
 	$dir = $this->model->get_from_session('dir', '');
     $search = $this->model->get_from_session('search', '');
     $page_num = $this->model->get_from_session('paged', 0);
-    $extensions = $this->model->get_from_session('extensions', '*');
     $callback = $this->model->get_from_session('callback', '');
-    $valid_types = explode( ',', strtolower($extensions) );
+    $valid_types = explode( ',', strtolower('jpg,jpeg,png,gif,svg') );
 
 	// set session data.
 	$session_data = array();
@@ -78,7 +77,7 @@ class FilemanagerController {
 		'width' => '850',
 		'height' => '550',
 		'task' => 'pagination',
-		'extensions' => '',
+		'extensions' => 'jpg,jpeg,png,gif,svg',
 		'callback' => '',
 		'dir' => $dir,
 		'TB_iframe' => '1',
@@ -187,7 +186,8 @@ class FilemanagerController {
 		'alt' => str_replace("_", " ", $new_dir_path_name),
 		'filename' => str_replace("_", " ", $new_dir_path_name),
 		'thumb' => '/filemanager/images/dir.png',
-		'date_modified' => date("Y-m-d H:i:s")
+		'date_modified' => date("Y-m-d H:i:s"),
+		'author' => get_current_user_id(),
       );
       $format = array(
         '%d',
@@ -196,7 +196,8 @@ class FilemanagerController {
         '%s',
         '%s',
         '%s',
-        '%s'
+        '%s',
+        '%d'
       );
       $wpdb->insert($wpdb->prefix . 'bwg_file_paths', $data, $format);
       mkdir($new_dir_path);
@@ -207,7 +208,7 @@ class FilemanagerController {
       'bwg_width' => '850',
       'bwg_height' => '550',
       'task' => 'display',
-      'extensions' => WDWLibrary::get('extensions'),
+      'extensions' => 'jpg,jpeg,png,gif,svg',
       'callback' => WDWLibrary::get('callback'),
       'dir' => $input_dir,
       'TB_iframe' => '1',
@@ -222,7 +223,7 @@ class FilemanagerController {
 		$dir = $this->model->get_from_session('dir', '');
 		$dir = ($dir == '' || $dir == '/') ? '/' : $dir .'/';
 		$input_dir = (isset($_REQUEST['dir']) ? str_replace('\\', '', WDWLibrary::get('dir','','sanitize_text_field','REQUEST')) : '');
-		$valid_types = explode(',', isset($_REQUEST['extensions']) ? strtolower(WDWLibrary::get('extensions','','sanitize_text_field','REQUEST')) : '*');
+		$valid_types = explode(',', 'jpg,jpeg,png,gif,svg');
 		$parsing = $this->model->files_parsing_db(array(
 			'refresh' => true,
 			'dir' => BWG()->upload_dir . $dir,
@@ -236,7 +237,7 @@ class FilemanagerController {
 			'width' => '850',
 			'height' => '550',
 			'task' => 'display',
-			'extensions' => WDWLibrary::get('extensions'),
+			'extensions' => 'jpg,jpeg,png,gif,svg',
 			'callback' => WDWLibrary::get('callback'),
 			'dir' => $input_dir,
 			'TB_iframe' => '1',
@@ -383,7 +384,7 @@ class FilemanagerController {
       'bwg_width' => '850',
       'bwg_height' => '550',
       'task' => 'display',
-      'extensions' => WDWLibrary::get('extensions'),
+      'extensions' => 'jpg,jpeg,png,gif,svg',
       'callback' => WDWLibrary::get('callback'),
       'dir' => $input_dir,
       'TB_iframe' => '1',
@@ -405,7 +406,7 @@ class FilemanagerController {
     $file_names = explode('**#**', (isset($_REQUEST['file_names']) ? stripslashes(WDWLibrary::get('file_names','','sanitize_text_field','REQUEST')) : ''));
     $path = $input_dir .'/';
     $msg = '';
-	$file_path_tbl = $wpdb->prefix . 'bwg_file_paths';
+	  $file_path_tbl = $wpdb->prefix . 'bwg_file_paths';
     foreach ($file_names as $file_name) {
       $file_name = htmlspecialchars_decode($file_name, ENT_COMPAT | ENT_QUOTES);
       $file_name = str_replace('../', '', $file_name);
@@ -444,7 +445,7 @@ class FilemanagerController {
       'bwg_width' => '850',
       'bwg_height' => '550',
       'task' => 'show_file_manager',
-      'extensions' => WDWLibrary::get('extensions'),
+      'extensions' => 'jpg,jpeg,png,gif,svg',
       'callback' => WDWLibrary::get('callback'),
       'dir' => $input_dir,
       'TB_iframe' => '1',
@@ -668,7 +669,7 @@ class FilemanagerController {
       'bwg_width' => '850',
       'bwg_height' => '550',
       'task' => 'show_file_manager',
-      'extensions' => WDWLibrary::get('extensions','','sanitize_text_field','REQUEST'),
+      'extensions' => 'jpg,jpeg,png,gif,svg',
       'callback' => WDWLibrary::get('callback','','sanitize_text_field','REQUEST'),
       'dir' => $input_dir,
       'TB_iframe' => '1',
@@ -803,13 +804,14 @@ class FilemanagerController {
     }
 
 		$items = $wpdb->get_results( $wpdb->prepare('SELECT * FROM `' . $wpdb->prefix . 'bwg_file_paths` WHERE `is_dir` = 1 AND `path` ="%s"' . $where, $prepareArgs) );
-		if( !empty($items) ) {
-			foreach( $items as $item) {
-				$path = $item->path . $item->name .'/';
-				$children = $this->getRecursivePathLists($path, $item->name, $level+1);
-				$parents[] = $path;
-			}
-		}
+    if ( !empty($items) ) {
+      foreach ( $items as $item ) {
+        $path = $item->path . $item->name . '/';
+        $children = $this->getRecursivePathLists($path, $item->name, $level + 1);
+        $parents[] = $path;
+      }
+    }
+
 		return $parents;
 	}
 }

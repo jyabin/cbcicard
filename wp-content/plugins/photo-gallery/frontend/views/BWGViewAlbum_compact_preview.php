@@ -62,11 +62,6 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
     }
     else {
       echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
-      echo '<script id="bwg-script-' . $bwg .'">
-        jQuery(function() {
-          bwg_main_ready();
-        });
-      </script>';
     }
     ob_start();
 
@@ -111,7 +106,7 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
              data-title="<?php echo htmlspecialchars(addslashes($row->name)); ?>"
              data-bwg="<?php echo $bwg; ?>">
             <?php if ( $params['compuct_album_title'] == 'show' && $theme_row->album_compact_thumb_title_pos == 'top' ) { echo $title; } ?>
-            <div class="bwg-item0 lazy_loader">
+            <div class="bwg-item0 <?php echo ($lazyload) ? 'lazy_loader': ''; ?>">
               <div class="bwg-item1 <?php echo $theme_row->album_compact_thumb_hover_effect == 'zoom' && $params['compuct_album_title'] == 'hover' ? 'bwg-zoom-effect' : ''; ?>">
                 <div class="bwg-item2">
                   <img class="skip-lazy <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
@@ -142,7 +137,7 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
       }
     }
     ?>
-    <input type="hidden" id="bwg_album_breadcrumb_<?php echo $bwg; ?>" name="bwg_album_breadcrumb_<?php echo $bwg; ?>" value='<?php echo $breadcrumb; ?>' />
+    <input type="hidden" id="bwg_album_breadcrumb_<?php echo $bwg; ?>" name="bwg_album_breadcrumb_<?php echo $bwg; ?>" value='<?php echo esc_attr($breadcrumb); ?>' />
     <?php
     $content = ob_get_clean();
     if ( $params['ajax'] ) {/* Ajax response after ajax call for filters and pagination.*/

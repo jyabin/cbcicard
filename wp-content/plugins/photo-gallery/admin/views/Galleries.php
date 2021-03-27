@@ -43,7 +43,7 @@ class GalleriesView_bwg extends AdminView_bwg {
                                                     'task' => 'edit',
                                                   ), admin_url('admin.php')),
                         ),
-                        'add_new_button_text' => 'Add new gallery',
+                        'add_new_button_text' => __('Add new gallery', BWG()->prefix),
                         'how_to_button' => true,
                       ));
     echo $this->search();
@@ -403,7 +403,12 @@ class GalleriesView_bwg extends AdminView_bwg {
     $ids_string = '';
     ?>
     <div class="buttons_div_left">
-      <a href="<?php echo $params['add_images_action']; ?>" id="add_image_bwg" onclick="jQuery('#loading_div').show();" class="button button-primary button-large thickbox thickbox-preview" title="<?php _e("Add Images", BWG()->prefix); ?>" onclick="return false;" style="margin-bottom:5px; <?php if ( $params['gallery_type'] != '' ) { echo 'display:none';} ?>">
+      <a href="<?php echo $params['add_images_action']; ?>" id="add_image_bwg" onclick="jQuery('#loading_div').show();jQuery( '#paged' ).val( 1 );jQuery( '#ajax_task' ).val( 'ajax_apply' );
+      spider_ajax_save( 'bwg_gallery' );" class="button button-primary button-large thickbox thickbox-preview"
+         title="<?php _e("Add Images", BWG()->prefix); ?>" onclick="return false;"
+         style="margin-bottom:5px; <?php if ( $params['gallery_type'] != '' ) {
+           echo 'display:none';
+         } ?>">
         <?php _e('Add Images', BWG()->prefix); ?>
       </a>
       <input type="button" id="import_image_bwg" class="button button-secondary button-large" onclick="<?php echo (BWG()->is_demo ? 'alert(\'' . addslashes(__('This option is disabled in demo.', BWG()->prefix)) . '\');' : 'spider_media_uploader(event, true);'); ?>return false;" value="<?php _e("Import from Media Library", BWG()->prefix); ?>" style="<?php if ( $params['gallery_type'] != '' ) { echo 'display:none';} ?>" />
@@ -455,7 +460,6 @@ class GalleriesView_bwg extends AdminView_bwg {
         <div>
           <p class="spider_description_title"><?php _e('<b>Instagram</b> URL example:', BWG()->prefix); ?></p>
           <input type="text" value="https://instagram.com/p/ykvv0puS4u" disabled="disabled">
-          <p class="description"><?php _e('Add', BWG()->prefix); ?> "<i style="text-decoration:underline;"><?php _e('post', BWG()->prefix); ?></i>" <?php _e('to the end of URL if you want to embed the whole Instagram post, not only its content.', BWG()->prefix); ?></p>
         </div>
         <?php
         if ( !empty($params['facebook_embed']['media']) && !empty($params['facebook_embed']['media']['body']) ) {
@@ -851,7 +855,6 @@ class GalleriesView_bwg extends AdminView_bwg {
       <input type="hidden" id="total" name="total" value="<?php echo $params['total']; ?>" />
       <input type="hidden" id="added_tags_id" name="added_tags_id" value="" />
       <input type="hidden" id="added_tags_act" name="added_tags_act" value="" />
-      <a class="wd-add-tags thickbox thickbox-preview wd-hide" href="<?php echo add_query_arg(array('TB_iframe' => '1'),  $params['add_tags_action']); ?>"></a>
       <?php
       if (class_exists('BWGEC')) {
         $query_url = admin_url('admin-ajax.php');
@@ -869,6 +872,7 @@ class GalleriesView_bwg extends AdminView_bwg {
       <?php } ?>
       <input type="hidden" id="remove_pricelist" value="" />
     </div>
+    <a class="wd-add-tags thickbox thickbox-preview wd-hide" href="<?php echo add_query_arg(array('TB_iframe' => '1'),  $params['add_tags_action']); ?>"></a>
     <div class="tablenav bottom">
       <?php echo $this->pagination($params['page_url'], $params['total'], $params['items_per_page']); ?>
     </div>

@@ -1394,6 +1394,12 @@ textarea.bwg_popup_input {
   height: 30px;
   overflow: hidden;
 }
+.bwg_tab_title_wrap a {
+  color: #2160b5;
+  outline: none;
+  font-weight: 600;
+  text-decoration: none;
+}
 .bwg_move {
   border: none;
   color: #aaaaaa;
@@ -2167,6 +2173,106 @@ input.search_in_options:focus {
   border-bottom: 1px solid #E5E5E5;
 }
 
+#search_in_tablet {
+  position: relative;
+  padding-bottom: 130px;
+}
+
+@media screen and (max-width: 335px) {
+  #search_in_tablet {
+    padding-bottom: 180px;
+  }
+  #div_search_in_options_tablets {
+    position: relative;
+    top: 140px;
+  }
+  .fixed #div_search_in_options_tablets {
+    top: 20px!important;
+  }
+}
+
+@media screen and (min-width: 336px) and (max-width: 459px) {
+  #search_in_tablet {
+    padding-bottom: 165px;
+  }
+  #div_search_in_options_tablets {
+    position: relative;
+    top: 100px;
+  }
+  .fixed #div_search_in_options_tablets {
+    top: 20px!important;
+  }
+}
+
+@media screen and (min-width: 460px) and (max-width: 600px) {
+  #search_in_tablet {
+    padding-bottom: 145px;
+  }
+  #div_search_in_options_tablets {
+    position: relative;
+    top: 85px!important;
+  }
+  .fixed #div_search_in_options_tablets {
+    top: 20px!important; /*wordpress bug dont touch*/
+  }
+}
+
+@media screen and (min-width: 601px) and (max-width: 782px) {
+  #search_in_tablet.fixed {
+    padding-bottom: 220px;
+  }
+  #div_search_in_options_tablets {
+    position: relative;
+    top: 60px!important;
+  }
+  .fixed #div_search_in_options_tablets {
+    top: 175px!important; /*wordpress bug dont touch*/
+    right: unset!important;
+  }
+}
+
+@media screen and (min-width: 783px) and (max-width: 826px) {
+  #search_in_tablet.fixed {
+    padding-bottom: 130px;
+  }
+  #div_search_in_options_tablets {
+    position: relative;
+    top: 85px!important;
+  }
+  .fixed #div_search_in_options_tablets {
+    top: 40px!important; /*wordpress bug dont touch*/
+    /*right: unset!important;*/
+  }
+}
+
+@media screen and (max-width: 1275px) and (min-width: 827px){
+  #search_in_tablet.fixed {
+    padding-bottom: 50px;
+  }
+  #div_search_in_options_tablets {
+    position: relative;
+    top: 30px;
+  }
+  .fixed #div_search_in_options_tablets {
+    top: 0px!important;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .wd-list-view-header-buttons .wd-buttons {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+  }
+  .tw-button-primary {
+    margin-right: 0px;
+  }
+}
+
+#search_in_options_container {
+  position: absolute;
+  width: 100%;
+}
 .search_prev{
   margin-left: 14px;
 }
@@ -2896,7 +3002,7 @@ bwg-gallery-ul {
   #bwg_tab_galleries_content .gallery_type.gallery_type_active .gallery_type_div, #bwg_tab_albums_content .gallery_type.gallery_type_active .album_type_div {
     padding: 10px 0 14px 0;
   }
-  #bwg_tab_gallery_content > .bwg-section > .wd-box-content {
+  #bwg_tab_gallery_content > .bwg-section > .wd-box-content, #bwg_tab_gallery_group_content > .bwg-section > .wd-box-content {
     padding: 10px 0;
   }
   .gallery_type {
@@ -3337,7 +3443,7 @@ bwg-gallery-ul {
     padding: 8px 0px 9px;
   }
   #search_in_tablet.fixed{
-    top: 45px;
+    top: 0px;
   }
 
   .bwg-tabs .bwg-tablink {
@@ -3345,7 +3451,7 @@ bwg-gallery-ul {
   }
 
   #search_in_options_container.fixed {
-    top: 109px;
+    top: 66px;
   }
   .upgrade-to-pro-text {
     padding-top: 80px;
@@ -3362,7 +3468,7 @@ bwg-gallery-ul {
   }
 }
 
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 826px) {
   .bwg_form .tablenav.top .actions, .tablenav .view-switch {
     display: none;
   }
@@ -3387,9 +3493,6 @@ bwg-gallery-ul {
   .tw-button-primary {
     padding: 9px 22px 9px 23px;
     margin-left: 0;
-  }
-  #search_in_options_container.fixed {
-    display: none;
   }
   #search_in_options_container {
     border: none;
@@ -3484,7 +3587,7 @@ bwg-gallery-ul {
     margin: 10px auto;
   }
   .wd-list-view-header .wd-list-view-header-left {
-    display: block;
+    display: flex;
   }
   .wd-list-view-header .wd-list-view-header-left .wd-page-title.wd-header {
     display: inline-block;
@@ -3501,7 +3604,6 @@ bwg-gallery-ul {
   .wd-list-view-header .wd-list-view-header-left .wd-list-view-header-buttons {
     display: flex;
     justify-content: flex-end;
-    margin-top: 22px;
   }
   .wd-list-view-header .wd-list-view-header-left .wd-list-view-header-buttons .page-title-action {
     padding: 9px 10px;
@@ -3559,4 +3661,11 @@ bwg-gallery-ul {
   .wd-form .widefat tbody th.check-column {
     padding: 70px 2px 0 10px !important;
   }
+}
+
+.wd-button,
+.tw-button-primary,
+.tw-button-secondary,
+.button-large {
+  cursor: pointer;
 }

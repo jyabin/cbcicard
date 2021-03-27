@@ -59,9 +59,13 @@ class FilemanagerModel {
 		$page_num = $params['page_num'];
 		$page_per = $params['page_per'];
 
-		$query  = ' SELECT * FROM `' . $wpdb->prefix . 'bwg_file_paths`';
+		$query = ' SELECT * FROM `' . $wpdb->prefix . 'bwg_file_paths`';
 		$query .= ' WHERE `path` = %s';
     $prepareArgs = array($dir);
+    if ( !current_user_can('manage_options') && BWG()->options->image_role ) {
+      $query .= " AND `author`=%d";
+      $prepareArgs[] = get_current_user_id();
+    }
 		if ( $search ) {
 			$query .= ' AND ((filename LIKE %s) OR (alt LIKE %s)) ';
       $prepareArgs[] = "%" . $search . "%";
@@ -168,9 +172,13 @@ class FilemanagerModel {
 		  $order = 'desc';
 		}
 
-		$query  = ' SELECT * FROM `' . $wpdb->prefix . 'bwg_file_paths`';
+		$query = ' SELECT * FROM `' . $wpdb->prefix . 'bwg_file_paths`';
 		$query .= ' WHERE `path` = %s';
     $prepareArgs = array($dir);
+    if ( !current_user_can('manage_options') && BWG()->options->image_role ) {
+      $query .= " AND `author`=%d";
+      $prepareArgs[] = get_current_user_id();
+    }
 		if ( $search ) {
       $query .= ' AND ((filename LIKE %s) OR (alt LIKE %s)) ';
       $prepareArgs[] = "%" . $search . "%";

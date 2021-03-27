@@ -209,6 +209,9 @@ function submitFiles() {
           fileData['tags'] = wdb_all_files_filtered[i]["tags"];
           filesValid.push(fileData);
         }
+      } else {
+        submit("", null, null, null, dir + DS + jQuery(file_object).attr("name"), null, null, null, null, null, null);
+        return
       }
     }
   }
@@ -238,6 +241,9 @@ function submitFiles() {
         fileData['copyright'] = jQuery(file_object).attr("fileCopyright");
         fileData['tags'] = jQuery(file_object).attr("fileTags");
         filesValid.push(fileData);
+      } else {
+        submit("", null, null, null, dir + DS + jQuery(file_object).attr("name"), null, null, null, null, null, null);
+        return
       }
     }
   }
@@ -299,7 +305,7 @@ function onBtnRenameItemClick(event, obj) {
 		var oldName = getFileName(filesSelected[0]);
 		var newName = prompt(messageEnterNewName, oldName);
 		if ((newName != null) && (newName != "")) {
-			newName = newName.replace(/ /g, "_").replace(/%/g, "");
+			newName = newName.replace(/"/g, "").replace(/ /g, "_").replace(/%/g, "");
 			submit("rename_item", null, null, null, null, newName, null, null, null, null, null);
 		}
 	}

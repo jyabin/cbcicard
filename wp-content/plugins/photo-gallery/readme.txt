@@ -2,8 +2,8 @@
 Contributors: webdorado,wdsupport,photogallerysupport,10web
 Tags: gallery, photo gallery, image gallery, responsive gallery, wordpress gallery plugin, photo albums, gallery slider, gallery lightbox, wordpress photo gallery plugin, fullscreen gallery, watermarking, video gallery
 Requires at least: 4.6
-Tested up to: 5.5
-Stable tag: 1.5.64
+Tested up to: 5.7
+Stable tag: 1.5.70
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,7 +104,7 @@ Under the social options tab you’ll find settings for the Instagram and Facebo
 *   Possibility of changing the roles of who can edit the galleries/albums/images (Author/All Users)
 
 = Photo Gallery Add-ons =
-[Ecommerce Add-on](https://10web.io/plugins/wordpress-photo-gallery/) - Display your digital content and sell it directly from your website.
+[Google Photos Add-on](https://10web.io/plugins/wordpress-photo-gallery/) - Link and display your Google Photos albums in one click
 [Export/Import Add-on](https://10web.io/plugins/wordpress-photo-gallery/)  Export/import galleries, albums and all related data from one WordPress site to another.
 
 ###IMPORTANT:
@@ -281,6 +281,59 @@ Choose whether to display random or the first/last specific number of images.
 **Theme.** Choose the theme, which will be applied to the gallery/album.
 
 == Changelog ==
+
+= 1.5.70 =
+* Added: Zoom in/out for images in lightbox.
+* Changed: Reset only the current tag options on themes reset.
+* Changed: Make items clickable on editing Gallery groups.
+* Fixed: Removed hash after closing lightbox.
+* Fixed: Video causes a JS error while trying to close full screen in Slideshow view.
+* Fixed: Uploader issue in some cases.
+* Fixed: Scrolling down in options page.
+* Fixed: Date and Title filters as a default.
+* Fixed: Blog Style view alignment.
+* Fixed: Importing Gallery groups.
+* Fixed: Disable Elementor lightbox for gallery images.
+* Fixed: Preview in Elementor.
+* Fixed: Spacing between images in masonry view.
+* Fixed: Images description in gallery groups.
+
+= 1.5.69 =
+* Added: Possibility to set Embed YouTube video starting time and to show related videos from your channel.
+* Fixed: XSS vulnerability.
+* Fixed: Scroll bar styles in comments.
+* Fixed: Thumbnails alignment in uploader.
+* Fixed: Remove I button to show image title/description for image with empty title/description in lightbox.
+* Fixed: Update preview images after the gallery content has been removed.
+* Fixed: Message after deleting images with bulk action.
+
+= 1.5.68 =
+* Added: Possibility to allow users with none administrator role to edit themes, tags, options.
+* Fixed: XSS vulnerability.
+* Fixed: Ordering functionality for admin.
+* Fixed: Autoplay during blur/focus tabs.
+* Fixed: Export functionality on Mozilla.
+* Fixed: Image role restrictions.
+* Fixed: Slideshow autoplay in the multiple tabs.
+
+= 1.5.67 =
+* Fixed: Style issues with WP5.6.
+* Fixed: Duplicate of Gallery groups with Select all button.
+* Fixed: Do not allow double quotes in image name.
+* Fixed: Double quotes in gallery name.
+* Fixed: Do not duplicate image on importing from media library.
+* Fixed: Issue with jQuery mobile library.
+* Fixed: Editing shortcode in WP Classic editor.
+
+= 1.5.66 =
+* Changed: js ready function call logic.
+
+= 1.5.65 =
+* Changed: Adding shortcode design.
+* Fixed: Share with Twitter.
+* Fixed: Instagram oEmbed functionality.
+* Fixed: Smaller area for play/pause button on mobile.
+* Fixed: Image bulk actions for galleries with large amount of images.
 
 = 1.5.64 =
 * Fixed: Instagram functionality.

@@ -179,7 +179,7 @@ class ThemesView_bwg extends AdminView_bwg {
                         'add_new_button' => array(
 							          'href' => add_query_arg(array( 'page' => $page, 'task' => 'edit' ), admin_url('admin.php')),
                         ),
-                        'add_new_button_text' => 'Add new theme',
+                        'add_new_button_text' => __('Add new theme', BWG()->prefix),
                       ));
     echo $this->search();
     ?>

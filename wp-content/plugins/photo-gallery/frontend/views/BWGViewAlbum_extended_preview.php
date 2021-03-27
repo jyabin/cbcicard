@@ -41,7 +41,7 @@ class BWGViewAlbum_extended_preview extends BWGViewSite {
     );
 
     $breadcrumb = WDWLibrary::get('bwg_album_breadcrumb_' . $bwg);
-	$breadcrumb = !empty($breadcrumb) ? $breadcrumb : json_encode($breadcrumb_arr);
+	  $breadcrumb = !empty($breadcrumb) ? $breadcrumb : json_encode($breadcrumb_arr);
     $params['breadcrumb_arr'] = json_decode($breadcrumb);
 
     /* Set theme parameters for Gallery/Gallery group title/description.*/
@@ -68,11 +68,6 @@ class BWGViewAlbum_extended_preview extends BWGViewSite {
     }
     else {
       echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
-      echo '<script id="bwg-script-' . $bwg .'">
-        jQuery(function() {
-          bwg_main_ready();
-        });
-      </script>';
     }
 
     ob_start();
@@ -118,7 +113,7 @@ class BWGViewAlbum_extended_preview extends BWGViewSite {
                  data-alb_gal_id="<?php echo (($params['album_gallery_id'] != 0) ? $row->alb_gal_id : $row->id); ?>"
                  data-def_type="<?php echo $row->def_type; ?>"
                  data-title="<?php echo htmlspecialchars(addslashes($row->name)); ?>">
-                <div class="bwg-item0 bwg_album_thumb_<?php echo $bwg; ?> lazy_loader">
+                <div class="bwg-item0 bwg_album_thumb_<?php echo $bwg; ?> <?php echo ($lazyload) ? 'lazy_loader' : ''; ?>">
                   <div class="bwg-item1 bwg_album_thumb_spun1_<?php echo $bwg; ?>">
                     <div class="bwg-item2">
                       <img class="skip-lazy <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
@@ -196,7 +191,7 @@ class BWGViewAlbum_extended_preview extends BWGViewSite {
       }
     }
     ?>
-    <input type="hidden" id="bwg_album_breadcrumb_<?php echo $bwg; ?>" name="bwg_album_breadcrumb_<?php echo $bwg; ?>" value='<?php echo $breadcrumb; ?>' />
+    <input type="hidden" id="bwg_album_breadcrumb_<?php echo $bwg; ?>" name="bwg_album_breadcrumb_<?php echo $bwg; ?>" value='<?php echo esc_attr($breadcrumb); ?>' />
     <?php
 
     $content = ob_get_clean();

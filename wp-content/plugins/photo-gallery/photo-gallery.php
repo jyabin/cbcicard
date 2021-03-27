@@ -3,7 +3,7 @@
  * Plugin Name: Photo Gallery
  * Plugin URI: https://10web.io/plugins/wordpress-photo-gallery/?utm_source=photo_gallery&utm_medium=free_plugin
  * Description: This plugin is a fully responsive gallery plugin with advanced functionality.  It allows having different image galleries for your posts and pages. You can create unlimited number of galleries, combine them into albums, and provide descriptions and tags.
- * Version: 1.5.64
+ * Version: 1.5.70
  * Author: Photo Gallery Team
  * Author URI: https://10web.io/plugins/?utm_source=photo_gallery&utm_medium=free_plugin
  * License: GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -105,8 +105,8 @@ final class BWG {
     $this->plugin_url = plugins_url(plugin_basename(dirname(__FILE__)));
     $this->front_url = $this->plugin_url;
     $this->main_file = plugin_basename(__FILE__);
-    $this->plugin_version = '1.5.64';
-    $this->db_version = '1.5.64';
+    $this->plugin_version = '1.5.70';
+    $this->db_version = '1.5.70';
     $this->prefix = 'bwg';
     $this->nicename = __('Photo Gallery', $this->prefix);
     require_once($this->plugin_dir . '/framework/WDWLibrary.php');
@@ -364,7 +364,7 @@ final class BWG {
     $blocks['tw/' . $this->prefix] = array(
       'title' => $this->nicename,
       'titleSelect' => sprintf(__('Select %s', $this->prefix), $this->nicename),
-      'iconUrl' => $this->plugin_url . '/images/tw-gb/photo-gallery.svg',
+      'iconUrl' => $this->plugin_url . '/images/tw-gb/shortcode_new.jpg',
       'iconSvg' => array('width' => 20, 'height' => 20, 'src' => $this->plugin_url . '/images/tw-gb/icon.svg'),
       'isPopup' => true,
       'data' => array('shortcodeUrl' => add_query_arg(array('action' => 'shortcode_bwg'), admin_url('admin-ajax.php'))),
@@ -472,6 +472,9 @@ final class BWG {
    */
   public function admin_menu() {
     $permissions = $this->is_pro ? $this->options->permissions : 'manage_options';
+    $tags_permission = $this->is_pro && $this->options->tag_role ? $this->options->permissions : 'manage_options';
+    $themes_permission = $this->is_pro && $this->options->theme_role ? $this->options->permissions : 'manage_options';
+    $settings_permission = $this->is_pro && $this->options->settings_role ? $this->options->permissions : 'manage_options';
     $parent_slug = 'galleries_' . $this->prefix;
     add_menu_page($this->nicename, $this->nicename, $permissions, 'galleries_' . $this->prefix, array($this , 'admin_pages'), $this->plugin_url . '/images/icons/icon.png');
 
@@ -481,11 +484,11 @@ final class BWG {
     $albums_page = add_submenu_page($parent_slug, __('Gallery Groups', $this->prefix), __('Gallery Groups', $this->prefix), $permissions, 'albums_' . $this->prefix, array($this , 'admin_pages'));
     add_action('load-' . $albums_page, array($this, 'albums_per_page_option'));
 
-    add_submenu_page($parent_slug, __('Tags', $this->prefix), __('Tags', $this->prefix), $permissions, 'edit-tags.php?taxonomy=bwg_tag');
+    add_submenu_page($parent_slug, __('Tags', $this->prefix), __('Tags', $this->prefix), $tags_permission, 'edit-tags.php?taxonomy=bwg_tag');
 
-    add_submenu_page($parent_slug, __('Global Settings', $this->prefix), __('Global Settings', $this->prefix), 'manage_options', 'options_' . $this->prefix, array($this , 'admin_pages'));
+    add_submenu_page($parent_slug, __('Global Settings', $this->prefix), __('Global Settings', $this->prefix), $settings_permission, 'options_' . $this->prefix, array($this , 'admin_pages'));
 
-    $themes_page = add_submenu_page($parent_slug, __('Themes', $this->prefix), __('Themes', $this->prefix), 'manage_options', 'themes_' . $this->prefix, array($this , 'admin_pages'));
+    $themes_page = add_submenu_page($parent_slug, __('Themes', $this->prefix), __('Themes', $this->prefix), $themes_permission, 'themes_' . $this->prefix, array($this , 'admin_pages'));
     add_action('load-' . $themes_page, array($this, 'themes_per_page_option'));
 
     if( $this->is_pro ) {
@@ -700,14 +703,14 @@ final class BWG {
    */
   public function frontend_data() {
     $params = array();
-    $params['id'] = WDWLibrary::get('shortcode_id', 0);
+    $params['id'] = WDWLibrary::get('shortcode_id', 0, 'intval');
 
     // Get values for elementor widget.
     $params['gallery_type'] = WDWLibrary::get('gallery_type', 'thumbnails');
-    $params['gallery_id'] = WDWLibrary::get('gallery_id', 0);
-    $params['tag'] = WDWLibrary::get('tag', 0);
-    $params['album_id'] = WDWLibrary::get('album_id', 0);
-    $params['theme_id'] = WDWLibrary::get('theme_id', 0);
+    $params['gallery_id'] = WDWLibrary::get('gallery_id', 0, 'intval');
+    $params['tag'] = WDWLibrary::get('tag', 0, 'intval');
+    $params['album_id'] = WDWLibrary::get('album_id', 0, 'intval');
+    $params['theme_id'] = WDWLibrary::get('theme_id', 0, 'intval');
     $params['current_url'] = WDWLibrary::get('current_url', NULL);
     $params['ajax'] = TRUE;
 
@@ -1003,8 +1006,6 @@ final class BWG {
 
   /**
    * Add media button to Wp editor.
-   *
-   * @param $context
    *
    * @return string
    */
@@ -1364,7 +1365,8 @@ final class BWG {
 
     // Styles/Scripts for popup.
     wp_register_style($this->prefix . '_fonts', BWG()->front_url . '/css/bwg-fonts/fonts.css', array(), '0.0.1');
-    wp_register_script('jquery-mobile', BWG()->front_url . '/js/jquery.mobile.min.js', $required_scripts, '1.3.2', $in_footer);
+    // jquery.mobile js file contain "Defaults, Namespace, Events All" selected from  https://jquerymobile.com/download-builder/
+    wp_register_script('jquery-mobile', BWG()->front_url . '/js/jquery.mobile.min.js', $required_scripts, '1.4.5', $in_footer);
     wp_register_script('mCustomScrollbar', BWG()->front_url . '/js/jquery.mCustomScrollbar.concat.min.js', $required_scripts, $version, $in_footer);
     wp_register_style('mCustomScrollbar', BWG()->front_url . '/css/jquery.mCustomScrollbar.min.css', array(), $version);
 
