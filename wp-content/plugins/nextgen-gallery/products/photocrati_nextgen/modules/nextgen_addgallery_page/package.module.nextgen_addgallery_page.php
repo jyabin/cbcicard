@@ -400,17 +400,6 @@ class A_Upload_Images_Form extends Mixin
     {
         return __("Upload Images", 'nggallery');
     }
-    /**
-     * Pass PHP object or array to JS, preserving numeric and boolean value
-     * @param string $handle 
-     * @param string $name 
-     * @param object|array $data 
-     */
-    function pass_data_to_js($handle, $var_name, $data)
-    {
-        $var_name = esc_js($var_name);
-        return wp_add_inline_script($handle, "let {$var_name} = " . json_encode($data, JSON_NUMERIC_CHECK));
-    }
     function enqueue_static_resources()
     {
         wp_enqueue_script('uppy');
@@ -419,13 +408,9 @@ class A_Upload_Images_Form extends Mixin
         wp_enqueue_script('toastify');
         wp_enqueue_style('toastify');
         wp_localize_script('uppy', 'NggUploadImages_i18n', $this->object->get_i18n_strings());
-        $this->pass_data_to_js('uppy', 'NggUppyCoreSettings', $this->object->get_uppy_core_settings());
-        $this->pass_data_to_js('uppy', 'NggUppyDashboardSettings', $this->object->get_uppy_dashboard_settings());
-        $this->pass_data_to_js('uppy', 'NggXHRSettings', $this->object->get_uppy_xhr_settings());
-    }
-    function get_allowed_image_mime_types()
-    {
-        return ['image/gif', 'image/jpg', 'image/jpeg', 'image/pjpeg', 'image/png'];
+        M_Ajax::pass_data_to_js('uppy', 'NggUppyCoreSettings', $this->object->get_uppy_core_settings());
+        M_Ajax::pass_data_to_js('uppy', 'NggUppyDashboardSettings', $this->object->get_uppy_dashboard_settings());
+        M_Ajax::pass_data_to_js('uppy', 'NggXHRSettings', $this->object->get_uppy_xhr_settings());
     }
     function get_uppy_note()
     {
@@ -440,11 +425,12 @@ class A_Upload_Images_Form extends Mixin
     }
     function get_uppy_core_settings()
     {
-        return apply_filters('ngg_uppy_core_settings', ['locale' => $this->object->get_uppy_locale(), 'restrictions' => ['maxfileSize' => wp_max_upload_size(), 'allowedFileTypes' => $this->can_upload_zips() ? array_merge($this->object->get_allowed_image_mime_types(), ['.zip']) : get_allowed_mime_types()]]);
+        $mime = apply_filters('ngg_allowed_mime_types', NGG_DEFAULT_ALLOWED_MIME_TYPES);
+        return apply_filters('ngg_uppy_core_settings', ['locale' => $this->object->get_uppy_locale(), 'restrictions' => ['maxfileSize' => wp_max_upload_size(), 'allowedFileTypes' => $this->can_upload_zips() ? array_merge($mime, ['.zip']) : get_allowed_mime_types()]]);
     }
     function get_uppy_dashboard_settings()
     {
-        return apply_filters('ngg_uppy_dashboard_settings', ['inline' => true, 'target' => '#uploader', 'width' => '100%', 'proudlyDisplayPoweredByUppy' => false, 'hideRetryButton' => true, 'note' => $this->object->get_uppy_note(), 'locale' => ['strings' => ['dropPaste' => $this->can_upload_zips() ? __('Drag image and ZIP files here or %{browse}', 'nggallery') : __('Drag image files here or %{browse}', 'nggallery')]]]);
+        return apply_filters('ngg_uppy_dashboard_settings', ['inline' => TRUE, 'target' => '#uploader', 'width' => '100%', 'proudlyDisplayPoweredByUppy' => FALSE, 'hideRetryButton' => TRUE, 'note' => $this->object->get_uppy_note(), 'locale' => ['strings' => ['dropPaste' => $this->can_upload_zips() ? __('Drag image and ZIP files here or %{browse}', 'nggallery') : __('Drag image files here or %{browse}', 'nggallery')]]]);
     }
     function get_uppy_locale()
     {

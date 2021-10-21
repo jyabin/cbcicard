@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitd944cb3ad10f834222db970b76dd976d
+class ComposerStaticInitdf834cf03fd70a9650c3e4bc171ad29a
 {
     public static $files = array (
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
@@ -21,10 +21,15 @@ class ComposerStaticInitd944cb3ad10f834222db970b76dd976d
         ),
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixesPsr0 = ComposerStaticInitd944cb3ad10f834222db970b76dd976d::$prefixesPsr0;
+            $loader->prefixesPsr0 = ComposerStaticInitdf834cf03fd70a9650c3e4bc171ad29a::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitdf834cf03fd70a9650c3e4bc171ad29a::$classMap;
 
         }, null, ClassLoader::class);
     }
