@@ -454,7 +454,6 @@ class WDWLibraryEmbed {
         }
       case 'EMBED_OEMBED_INSTAGRAM_POST':
         $oembed_instagram_html = '<div ';
-        $id = '';
         foreach ($attrs as $attr => $value) {
           if (preg_match('/src/i', $attr) === 0) {
             if ($attr != '' && $value != '') {
@@ -466,14 +465,13 @@ class WDWLibraryEmbed {
           }
         }
         $oembed_instagram_html .= ">";
-        if ($file_url != '') {
+        if ( $file_url != '' ) {
           if ($is_visible) {
             $oembed_instagram_html .= '<div class="inner_instagram_iframe_' . $class . '"';
           } else {
             $oembed_instagram_html .= '<dev id="bwg_carousel_preload_' . $bwg . '_' . $image_key . '" class="inner_instagram_iframe_' . $class . '"';
           }
-          $oembed_instagram_html .= ' frameborder="0" scrolling="no" allowtransparency="false" allowfullscreen ' .
-            'style="max-width: 100% !important; max-height: 100% !important; width: 100%; height: 100%; margin:0; vertical-align:middle;">' . base64_decode($file_url) . '</div>';
+          $oembed_instagram_html .= 'style="max-width: 100% !important; max-height: 100% !important; width: 100%; height: 100%; margin:0; vertical-align:middle;">' . base64_decode($file_url) . '</div>';
         }
         $oembed_instagram_html .= "</div>";
         $html_to_insert .= $oembed_instagram_html;
@@ -904,7 +902,7 @@ class WDWLibraryEmbed {
   public static function instagram_oembed_connect( $url = '' ) {
     // oEmbed API 2020 connect.
     $data = new stdClass();
-    $instagram_oembed_url = 'https://graph.facebook.com/v9.0/instagram_oembed/?url=' . $url . '&omitscript=true&access_token=356432828483035|0e211da32da5f501d25541fa10f4d6c0';
+    $instagram_oembed_url = 'https://graph.facebook.com/v11.0/instagram_oembed/?url=' . $url . '&omitscript=true&access_token=356432828483035|0e211da32da5f501d25541fa10f4d6c0';
     $get_embed_data = wp_remote_get($instagram_oembed_url);
     if ( is_wp_error($get_embed_data) ) {
       $data->error = array( 'error', 'Instagram API connect failed.' );
@@ -917,5 +915,48 @@ class WDWLibraryEmbed {
     }
 
     return $data;
+  }
+
+  /**
+   * Recover embed video/image files
+   * Currently function is working for vimeo
+   * TODO need to add other embed types
+   *
+   * @param object $image
+   *
+   */
+  public static function recover_oembed( $image ) {
+    global $wpdb;
+    if ( preg_match('/OEMBED_VIMEO/', $image->filetype) == 1 ) {
+      $embed_type = 'vimeo';
+    }
+    else {
+      return;
+    }
+
+    switch ( $embed_type ) {
+      case 'vimeo':
+        $vimeo_url = "https://vimeo.com/api/oembed.json?url=".$image->image_url;
+        $result = wp_remote_get($vimeo_url);
+
+        if( $result['response']['code'] == 200 ) {
+          $data = json_decode( $result['body'], 1 );
+
+          $update_data = array(
+            'thumb_url' => $data['thumbnail_url'],
+            'resolution_thumb' => $data['thumbnail_width'].' x '.$data['thumbnail_height'],
+            'resolution' => $data['thumbnail_width'].' x '.$data['thumbnail_height'],
+            'description' => $data['title'],
+          );
+          $wpdb->update(
+            $wpdb->prefix . 'bwg_image',
+            $update_data,
+            array('id'=>$image->id),
+            array('%s','%s','%s','%s'),
+            array('%d')
+          );
+        }
+        break;
+    }
   }
 }

@@ -252,6 +252,7 @@ class ThemesController_bwg {
 			'Lightbox' => __('Lightbox', BWG()->prefix),
 			'Navigation' => __('Navigation', BWG()->prefix),
 			'Carousel' => __('Carousel', BWG()->prefix),
+			'Tags' => __('Tags', BWG()->prefix),
 		);
 
 		$border_styles = array(
@@ -322,7 +323,6 @@ class ThemesController_bwg {
 			'heart' => __('Heart', BWG()->prefix),
 			'square' => __('Square', BWG()->prefix),
 		);
-
 
 		$params = array(
 			'id' => $id,

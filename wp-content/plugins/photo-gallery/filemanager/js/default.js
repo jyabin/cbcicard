@@ -11,22 +11,38 @@ var wdb_all_files_filtered = [];
 jQuery(function() {
 	var page = 1;
 	var page_per = jQuery("#explorer_body").data('page_per');
+  function checking_the_need_of_images(_that) {
+    var items_count = jQuery("#explorer_body .explorer_item").length;
+    var scroll_position = _that.scrollTop() + _that.innerHeight();
+    var scroll_Height = _that[0].scrollHeight - 300;
+    if ( scroll_position >= scroll_Height && items_count == (page_per * page) ) {
+      _that.off('scroll');
+      var orderby = jQuery("input[name='sort_by']").val();
+      var order = jQuery("input[name='sort_order']").val();
+      params['is_search'] = false;
+      params['element'] = jQuery("#explorer_body");
+      params['search'] = jQuery('#search_by_name .search_by_name').val().toLowerCase();
+      params['page'] = page;
+      params['orderby'] = orderby;
+      params['order'] = order;
+      ajax_print_images( params ).then(function() {
+        page++;
+        items_count = jQuery("#explorer_body .explorer_item").length;
+        scroll_position = _that.scrollTop() + _that.innerHeight();
+        scroll_Height = _that[0].scrollHeight - 200;
+        if ( scroll_position >= scroll_Height && items_count == (page_per * page) ) {
+          checking_the_need_of_images(_that)
+        } else {
+          jQuery("#explorer_body_container").scroll(function () {
+            checking_the_need_of_images(_that)
+          });
+        }
+      });
+    }
+  }
+  checking_the_need_of_images(jQuery("#explorer_body_container"))
 	jQuery("#explorer_body_container").scroll(function () {
-		var items_count = jQuery("#explorer_body .explorer_item").length;
-		var scroll_position = jQuery(this).scrollTop() + jQuery(this).innerHeight();
-		var scroll_Height = jQuery(this)[0].scrollHeight - 200;
-		if ( scroll_position >= scroll_Height && items_count == (page_per * page) ) {
-			var orderby = jQuery("input[name='sort_by']").val();
-			var order = jQuery("input[name='sort_order']").val();
-			params['is_search'] = false;
-			params['element'] = jQuery("#explorer_body");
-			params['search'] = jQuery('#search_by_name .search_by_name').val().toLowerCase();
-			params['page'] = page;
-			params['orderby'] = orderby;
-			params['order'] = order;
-			ajax_print_images( params );
-			page++;
-		}
+    checking_the_need_of_images(jQuery(this))
 	});
 
 	filesSelected = [];
@@ -86,11 +102,10 @@ function submit(task, sortBy, sortOrder, itemsView, destDir, fileNewName, newDir
   else {
     fileNames = filesSelected.join("**#**");
   }
-
-  switch (task) {
+  switch ( task ) {
     case "parsing_items":
       destDir = dir;
-	break;
+      break;
     case "rename_item":
       destDir = dir;
       newDirName = "";
@@ -187,6 +202,7 @@ function submitFiles() {
       if (wdb_all_files_filtered[i]["is_dir"] === '0') {
         var index = no_selected_files.indexOf(wdb_all_files_filtered[i]["name"]);
         if ( index < 0 ) {
+          fileData['index'] = i;
           fileData['name'] = wdb_all_files_filtered[i]["name"];
           fileData['filename'] = wdb_all_files_filtered[i]["filename"];;
           fileData['alt'] = wdb_all_files_filtered[i]["alt"];;
@@ -220,6 +236,7 @@ function submitFiles() {
       var file_object = jQuery('.explorer_item[name="' + filesSelected[i] + '"]');
       if (jQuery(file_object).attr("isDir") == "false") {
         var fileData = [];
+        fileData['index'] = parseInt(jQuery(file_object).find('.item_numbering').text());;
         fileData['name'] = filesSelected[i];
         fileData['filename'] = jQuery(file_object).attr("filename");
         fileData['alt'] = jQuery(file_object).attr("alt");
@@ -541,6 +558,9 @@ function onFileDrop(event, obj) {
 }
 
 function onBtnOpenClick(event, obj) {
+  jQuery('#add_selectid_img').css('pointer-events', 'none');
+  jQuery('#cancel_add_img').css('pointer-events', 'none');
+  jQuery('#select_all_images').css('pointer-events', 'none');
   if (jQuery('.explorer_item[name="' + filesSelected[0] + '"]').attr("isDir") == true) {
     filesSelected.length = 1;
     submit("", null, null, null, dir + DS + filesSelected[0], null, null, null, null, null, null);
@@ -592,52 +612,55 @@ function onBtnSelectAllClick( dir ) {
 }
 
 function ajax_print_images( params ) {
-	var element = params['element'];
-	var is_search = params['is_search'];
-	var paged = params['page'];
-	var search = params['search'];
-	var orderby = params['orderby'];
-	var order = params['order'];
-	var page_per = element.data('page_per');
-	var files_count = element.data('files_count');
-	var found_wrap = jQuery('#explorer_body_container .fm-no-found-wrap');
-	if ( (page_per * paged) < files_count ) {
-		jQuery.ajax({
-			type: "POST",
-			dataType: "json",
-			url: ajax_pagination_url,
-			data: {
-				dir,
-				paged,
-				search,
-				order,
-				orderby
-			},
-			success: function (res) {
-				if ( is_search ) {
-					jQuery('#loading_div', window.parent.document).hide();
-					element.html('');
-				}
-				if ( res.html ) {
-					element.append(res.html);
-					jQuery('#explorer_body .explorer_item').each(function(i,that) {
-						var img = jQuery(that).find('img');
-							img.attr('scr', jQuery(that).attr('filethumb') );
-					});
-					found_wrap.hide();
-				}
-				else if ( search && res.html == '') {
-					found_wrap.show();
-				}
-			},
-			beforeSend: function() {
-				if ( is_search ) {
-					jQuery('#loading_div', window.parent.document).show();
-					element.html('');
-				}
-			},
-			complete:function() {
-			}
-		});
-	}
+  var element = params['element'];
+  var is_search = params['is_search'];
+  var paged = params['page'];
+  var search = params['search'];
+  var orderby = params['orderby'];
+  var order = params['order'];
+  var page_per = element.data('page_per');
+  var files_count = element.data('files_count');
+  var found_wrap = jQuery('#explorer_body_container .fm-no-found-wrap');
+
+  return new Promise(function ( resolve, reject ) {
+    if ( (page_per * paged) < files_count ) {
+      jQuery.ajax({
+        type: "POST",
+        dataType: "json",
+        url: ajax_pagination_url,
+        data: {
+          dir,
+          paged,
+          search,
+          order,
+          orderby
+        },
+        success: function ( res ) {
+          if ( is_search ) {
+            jQuery('#loading_div', window.parent.document).hide();
+            element.html('');
+          }
+          if ( res.html ) {
+            element.append(res.html);
+            jQuery('#explorer_body .explorer_item').each(function ( i, that ) {
+              var img = jQuery(that).find('img');
+              img.attr('scr', jQuery(that).attr('filethumb'));
+            });
+            found_wrap.hide();
+          }
+          else if ( search && res.html == '' ) {
+            found_wrap.show();
+          }
+          resolve()
+        },
+        beforeSend: function () {
+          if ( is_search ) {
+            jQuery('#loading_div', window.parent.document).show();
+            element.html('');
+          }
+        },
+        complete: function () {}
+      });
+    }
+  });
 }

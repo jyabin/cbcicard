@@ -7,6 +7,15 @@ class BWGModelSite {
       $id = $wpdb->get_var('SELECT id FROM ' . $wpdb->prefix . 'bwg_theme WHERE default_theme=1');
     }
     $row = new WD_BWG_Theme($id);
+    foreach ( $row as $key => $val ) {
+      // '#' is removed from the color (jscolor lib v2.4.5)
+      preg_match('/_color/', $key, $is_color_array);
+      if ( !empty($is_color_array) && !empty($is_color_array[0]) ) {
+        $val = str_replace('#', '', $val);
+      }
+      $row->$key = $val;
+    }
+
     return $row;
   }
 
@@ -194,7 +203,7 @@ class BWGModelSite {
 
           $row->preview_image = WDWLibrary::image_url_version( $row->preview_image, $row->modified_date );
         }
-        if ( !empty( $row->random_preview_image ) ) {
+        if ( !empty( $row->random_preview_image ) && empty( $row->preview_image ) ) {
           $row->resolution_thumb = WDWLibrary::get_thumb_size( $row->random_preview_image );
           if ( $row->resolution_thumb == "" ) {
             $row->resolution_thumb = $this->get_album_preview_thumb_dimensions( $row->random_preview_image );

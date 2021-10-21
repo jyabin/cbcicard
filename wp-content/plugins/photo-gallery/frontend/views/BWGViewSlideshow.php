@@ -1,8 +1,7 @@
 <?php
 class BWGViewSlideshow extends BWGViewSite {
 
-public function display($params = array(), $bwg = 0) {
-
+public function display($params = array(), $bwg = 0, $ajax = FALSE) {
   $theme_row = $params['theme_row'];
   $image_rows = $params['image_rows'];
   $image_rows = $image_rows['images'];
@@ -105,11 +104,11 @@ public function display($params = array(), $bwg = 0) {
         }
       }
       else {
-        echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
+        echo '<style id="bwg-style-' . sanitize_html_class($bwg) . '">' . $inline_style . '</style>';
       }
     }
     else {
-      echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
+      echo '<style id="bwg-style-' . sanitize_html_class($bwg) . '">' . $inline_style . '</style>';
     }
 
     $data = array();
@@ -134,6 +133,15 @@ public function display($params = array(), $bwg = 0) {
       $data[$bwg][$key]["date"] = $image_row->date;
       $data[$bwg][$key]["is_embed"] = (preg_match('/EMBED/', $image_row->filetype) == 1 ? TRUE : FALSE);
       $data[$bwg][$key]["is_embed_video"] = (((preg_match('/EMBED/', $image_row->filetype) == 1) && (preg_match('/_VIDEO/', $image_row->filetype) == 1)) ? TRUE : FALSE);
+      if ( !empty($image_row->resolution) ) {
+        $resolution = explode(' ', $image_row->resolution);
+        if ( !empty($resolution[0]) ) {
+          $data[$bwg][$key]["image_width"] = trim($resolution[0]);
+        }
+        if ( !empty($resolution[1]) ) {
+          $data[$bwg][$key]["image_height"] = trim($resolution[2]);
+        }
+      }
     }
     ob_start();
     $trans_dur = ((floatval($params['slideshow_interval'] ) < 4) && (floatval($params['slideshow_interval']) != 0)) ? (floatval($params['slideshow_interval']) * 1000) / 4 : (floatval($params['slideshow_effect_duration']) * 1000);
@@ -175,18 +183,19 @@ public function display($params = array(), $bwg = 0) {
       'enable_slideshow_music' => $enable_slideshow_music,
     );
     ?>
-  <div class="bwg_slideshow_image_wrap_<?php echo $bwg; ?> bwg-container"
-       data-lightbox-url="<?php echo addslashes(add_query_arg($params['params_array'], admin_url('admin-ajax.php'))); ?>">
+  <div class="bwg_slideshow_image_wrap_<?php echo sanitize_html_class($bwg); ?> bwg-slideshow-images-wrapper bwg-container"
+       data-bwg="<?php echo esc_attr($bwg); ?>"
+       data-lightbox-url="<?php echo esc_url(addslashes(add_query_arg($params['params_array'], admin_url('admin-ajax.php')))); ?>">
     <?php
     $current_pos = 0;
     if ( $enable_slideshow_filmstrip ) {
       ?>
-      <div class="bwg_slideshow_filmstrip_container_<?php echo $bwg; ?>">
-        <div class="bwg_slideshow_filmstrip_left_<?php echo $bwg; ?>">
+      <div class="bwg_slideshow_filmstrip_container_<?php echo sanitize_html_class($bwg); ?>">
+        <div class="bwg_slideshow_filmstrip_left_<?php echo sanitize_html_class($bwg); ?>">
           <i class="<?php echo($filmstrip_direction == 'horizontal' ? 'bwg-icon-angle-left' : 'bwg-icon-angle-up'); ?>"></i>
         </div>
-        <div class="bwg_slideshow_filmstrip_<?php echo $bwg; ?> bwg_slideshow_filmstrip">
-          <div class="bwg_slideshow_filmstrip_thumbnails_<?php echo $bwg; ?>">
+        <div class="bwg_slideshow_filmstrip_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_filmstrip">
+          <div class="bwg_slideshow_filmstrip_thumbnails_<?php echo sanitize_html_class($bwg); ?>">
             <?php
             foreach ( $image_rows as $key => $image_row ) {
               if ( $image_row->id == $current_image_id ) {
@@ -196,6 +205,7 @@ public function display($params = array(), $bwg = 0) {
               $is_embed = preg_match('/EMBED/', $image_row->filetype) == 1 ? TRUE : FALSE;
               $is_embed_video = ($is_embed && preg_match('/_VIDEO/', $image_row->filetype) == 1) ? TRUE : FALSE;
               $is_embed_instagram = preg_match('/EMBED_OEMBED_INSTAGRAM/', $image_row->filetype) == 1 ? TRUE : FALSE;
+		    			$bwg_thumb_url = ($is_embed ? '' : BWG()->upload_url) . $image_row->thumb_url;
               if ( $play_pause_button_display === 'undefined' ) {
                 if ( $is_embed_video ) {
                   $play_pause_button_display = 'none';
@@ -249,22 +259,22 @@ public function display($params = array(), $bwg = 0) {
               $thumb_left = ($slideshow_filmstrip_width - $image_thumb_width) / 2;
               $thumb_top = ($slideshow_filmstrip_height - $image_thumb_height) / 2;
               ?>
-              <div id="bwg_filmstrip_thumbnail_<?php echo $key; ?>_<?php echo $bwg; ?>" class="bwg_slideshow_filmstrip_thumbnail_<?php echo $bwg; ?> <?php echo(($image_row->id == $current_image_id) ? 'bwg_slideshow_thumb_active_' . $bwg : 'bwg_slideshow_thumb_deactive_' . $bwg); ?>">
+              <div id="bwg_filmstrip_thumbnail_<?php echo sanitize_html_class($key.'_'.$bwg); ?>" class="bwg_slideshow_filmstrip_thumbnail_<?php echo sanitize_html_class($bwg); ?> <?php echo(($image_row->id == $current_image_id) ? 'bwg_slideshow_thumb_active_' . sanitize_html_class($bwg) : 'bwg_slideshow_thumb_deactive_' . sanitize_html_class($bwg)); ?>">
                 <img style="width:<?php echo $image_thumb_width; ?>px; height:<?php echo $image_thumb_height; ?>px; margin-left: <?php echo $thumb_left; ?>px; margin-top: <?php echo $thumb_top; ?>px;"
-                     class="skip-lazy bwg_filmstrip_thumbnail_img bwg_slideshow_filmstrip_thumbnail_img_<?php echo $bwg; ?> <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
-                     src="<?php if( !$lazyload ) { echo ($is_embed ? "" : BWG()->upload_url) . $image_row->thumb_url; } else { echo BWG()->plugin_url."/images/lazy_placeholder.gif"; } ?>"
-                     data-original="<?php echo ($is_embed ? "" : BWG()->upload_url) . $image_row->thumb_url; ?>"
+                     class="skip-lazy bwg_filmstrip_thumbnail_img bwg_slideshow_filmstrip_thumbnail_img_<?php echo sanitize_html_class($bwg); ?> <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
+                     src="<?php if( !$lazyload ) { echo esc_url($bwg_thumb_url); } else { echo esc_url(BWG()->plugin_url."/images/lazy_placeholder.gif"); } ?>"
+                     data-src="<?php echo esc_url($bwg_thumb_url); ?>"
                      onclick="bwg_change_image(parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()), '<?php echo $key; ?>', '', '', '<?php echo $bwg; ?>')"
-                     image_id="<?php echo $image_row->id; ?>"
-                     image_key="<?php echo $key; ?>"
-                     alt="<?php echo $image_row->alt; ?>" />
+                     image_id="<?php echo esc_attr($image_row->id); ?>"
+                     image_key="<?php echo esc_attr($key); ?>"
+                     alt="<?php echo esc_attr($image_row->alt); ?>" />
               </div>
               <?php
             }
             ?>
           </div>
         </div>
-        <div class="bwg_slideshow_filmstrip_right_<?php echo $bwg; ?>">
+        <div class="bwg_slideshow_filmstrip_right_<?php echo sanitize_html_class($bwg); ?>">
           <i class="<?php echo($filmstrip_direction == 'horizontal' ? 'bwg-icon-angle-right' : 'bwg-icon-angle-down'); ?>"></i>
         </div>
       </div>
@@ -272,8 +282,8 @@ public function display($params = array(), $bwg = 0) {
     }
     else {
       ?>
-      <div class="bwg_slideshow_dots_container_<?php echo $bwg; ?>">
-        <div class="bwg_slideshow_dots_thumbnails_<?php echo $bwg; ?>">
+      <div class="bwg_slideshow_dots_container_<?php echo sanitize_html_class($bwg); ?>">
+        <div class="bwg_slideshow_dots_thumbnails_<?php echo sanitize_html_class($bwg); ?>">
           <?php
           foreach ( $image_rows as $key => $image_row ) {
             if ( $image_row->id == $current_image_id ) {
@@ -281,7 +291,7 @@ public function display($params = array(), $bwg = 0) {
               $current_key = $key;
             }
             ?>
-            <span id="bwg_dots_<?php echo $key; ?>_<?php echo $bwg; ?>" class="bwg_slideshow_dots_<?php echo $bwg; ?> <?php echo(($image_row->id == $current_image_id) ? 'bwg_slideshow_dots_active_' . $bwg : 'bwg_slideshow_dots_deactive_' . $bwg); ?>" onclick="bwg_change_image(parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()), '<?php echo $key; ?>', '', '', <?php echo $bwg; ?>)" image_id="<?php echo $image_row->id; ?>" image_key="<?php echo $key; ?>"></span>
+            <span id="bwg_dots_<?php echo sanitize_html_class($key.'_'.$bwg); ?>" class="bwg_slideshow_dots_<?php echo sanitize_html_class($bwg); ?> <?php echo(($image_row->id == $current_image_id) ? 'bwg_slideshow_dots_active_' . sanitize_html_class($bwg) : 'bwg_slideshow_dots_deactive_' . sanitize_html_class($bwg)); ?>" onclick="bwg_change_image(parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()), '<?php echo $key; ?>', '', '', <?php echo $bwg; ?>)" image_id="<?php echo esc_attr($image_row->id); ?>" image_key="<?php echo esc_attr($key); ?>"></span>
             <?php
           }
           ?>
@@ -292,10 +302,10 @@ public function display($params = array(), $bwg = 0) {
     $bwg_param['bwg_current_filmstrip_pos'] = $current_pos;
     $bwg_params = json_encode($bwg_param);
     ?>
-    <div id="bwg_slideshow_image_container_<?php echo $bwg; ?>" class="bwg_slideshow_image_container_<?php echo $bwg; ?>" data-params='<?php echo $bwg_params; ?>'>
-      <div class="bwg_slide_container_<?php echo $bwg; ?>">
-        <div class="bwg_slide_bg_<?php echo $bwg; ?>">
-          <div class="bwg_slider_<?php echo $bwg; ?>">
+    <div id="bwg_slideshow_image_container_<?php echo sanitize_html_class($bwg); ?>" class="bwg_slideshow_image_container_<?php echo sanitize_html_class($bwg); ?>" data-params='<?php echo esc_attr($bwg_params); ?>'>
+      <div class="bwg_slide_container_<?php echo sanitize_html_class($bwg); ?>">
+        <div class="bwg_slide_bg_<?php echo sanitize_html_class($bwg); ?>">
+          <div class="bwg_slider_<?php echo sanitize_html_class($bwg); ?>">
             <?php
             foreach ( $image_rows as $key => $image_row ) {
               $is_embed = preg_match('/EMBED/', $image_row->filetype) == 1 ? TRUE : FALSE;
@@ -304,49 +314,58 @@ public function display($params = array(), $bwg = 0) {
               if ( $image_row->id == $current_image_id ) {
                 $current_key = $key;
                 ?>
-                <span class="bwg_slideshow_image_spun_<?php echo $bwg; ?>" id="image_id_<?php echo $bwg; ?>_<?php echo $image_row->id; ?>">
-                    <span class="bwg_slideshow_image_spun1_<?php echo $bwg; ?>">
-                      <span class="bwg_slideshow_image_spun2_<?php echo $bwg; ?>">
+                <span class="bwg_slideshow_image_spun_<?php echo sanitize_html_class($bwg); ?>" id="image_id_<?php echo sanitize_html_class($bwg.'_'.$image_row->id); ?>">
+                    <span class="bwg_slideshow_image_spun1_<?php echo sanitize_html_class($bwg); ?>">
+                      <span class="bwg_slideshow_image_spun2_<?php echo sanitize_html_class($bwg); ?>">
                         <?php
                         if ( !$is_embed ) {
                           ?>
-                          <a <?php echo($params['thumb_click_action'] == 'open_lightbox' ? (' class="bwg-a bwg_lightbox"' . (BWG()->options->enable_seo ? ' href="' . ($is_embed ? $image_row->thumb_url : BWG()->upload_url . $image_row->image_url) . '"' : '') . ' data-image-id="' . $image_row->id . '" data-elementor-open-lightbox="no"') : ('class="bwg-a" ' . ($params['thumb_click_action'] == 'redirect_to_url' && $image_row->redirect_url ? 'href="' . $image_row->redirect_url . '" target="' . ($params['thumb_link_target'] ? '_blank' : '') . '"' : ''))); ?>>
-                          <img id="bwg_slideshow_image_<?php echo $bwg; ?>"
-                               class="skip-lazy bwg_slide bwg_slideshow_image_<?php echo $bwg; ?> <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
-                               src="<?php if( !$lazyload ) { echo BWG()->upload_url . $image_row->image_url; } else { echo BWG()->plugin_url."/images/lazy_placeholder.gif"; } ?>"
-                               data-original="<?php echo BWG()->upload_url . $image_row->image_url; ?>"
-                               image_id="<?php echo $image_row->id; ?>"
-                               alt="<?php echo $image_row->alt; ?>" />
+                          <a <?php echo($params['thumb_click_action'] == 'open_lightbox' ? (' class="bwg-a bwg_lightbox"' . (BWG()->options->enable_seo ? ' href="' . esc_url($is_embed ? $image_row->thumb_url : BWG()->upload_url . $image_row->image_url) . '"' : '') . ' data-image-id="' . esc_attr($image_row->id) . '" data-elementor-open-lightbox="no"') : ('class="bwg-a" ' . ($params['thumb_click_action'] == 'redirect_to_url' && $image_row->redirect_url ? 'href="' . esc_url($image_row->redirect_url) . '" target="' . ($params['thumb_link_target'] ? '_blank' : '') . '"' : ''))); ?>>
+                          <img id="bwg_slideshow_image_<?php echo sanitize_html_class($bwg); ?>"
+                               class="skip-lazy bwg_slide bwg_slideshow_image_<?php echo sanitize_html_class($bwg); ?> <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
+                               src="<?php if( !$lazyload ) { echo esc_url(BWG()->upload_url . $image_row->image_url); } else { echo esc_url(BWG()->plugin_url."/images/lazy_placeholder.gif"); } ?>"
+                               data-src="<?php echo esc_url(BWG()->upload_url . $image_row->image_url); ?>"
+                               image_id="<?php echo esc_attr($image_row->id); ?>"
+                               alt="<?php echo esc_attr($image_row->alt); ?>" />
                           </a>
                           <?php
                         }
                         else {  /*$is_embed*/
                           ?>
-                          <span id="bwg_slideshow_image_<?php echo $bwg; ?>" class="bwg_slideshow_embed_<?php echo $bwg; ?>" image_id="<?php echo $image_row->id; ?>">
+                          <span id="bwg_slideshow_image_<?php echo sanitize_html_class($bwg); ?>" class="bwg_slideshow_embed_<?php echo sanitize_html_class($bwg); ?>" image_id="<?php echo esc_attr($image_row->id); ?>">
                             <?php echo $is_embed_instagram_video ? '<span class="bwg_inst_play_btn_cont" onclick="bwg_play_instagram_video(this)" ><span class="bwg_inst_play"></span></span>' : '';
                             if ( $is_embed_instagram_post ) {
-                              $post_width = $image_width - ($filmstrip_direction == 'vertical' ? $slideshow_filmstrip_width : 0);
-                              $post_height = $image_height - ($filmstrip_direction == 'horizontal' ? $slideshow_filmstrip_height : 0);
-                              if ( $post_height < $post_width + 88 ) {
-                                $post_width = $post_height - 88;
+                              $srcWidth = 640;
+                              $srcHeight = 640;
+                              /* HoverCard, Feedback, SocialProof height from Instagram */
+                              $feedback_social_proof_height = 109;
+                              $maxWidth = $image_width - ($filmstrip_direction == 'vertical' ? $slideshow_filmstrip_width : 0);
+                              $maxHeight = $image_height - ($filmstrip_direction == 'horizontal' ? $slideshow_filmstrip_height : 0);
+
+                              if ( !empty($image_row->resolution) ) {
+                                $image_resolution = explode(' x ', $image_row->resolution);
+                                if ( is_array($image_resolution) ) {
+                                  $srcWidth = $image_resolution[0];
+                                  $srcHeight = explode(' ', $image_resolution[1]);
+                                  $srcHeight = $srcHeight[0];
+                                }
+                              }
+                              $instagram_resizing = WDWLibrary::bwg_resizing_ratio( $srcWidth, $srcHeight, $maxWidth, $maxHeight );
+                              $instagram_width  = $instagram_resizing['width'];
+                              $instagram_height = $instagram_resizing['height'];
+                              if ( $instagram_height > $instagram_width ) {
+                                $instagram_width = $instagram_width - $feedback_social_proof_height;
                               }
                               else {
-                                $post_height = $post_width + 88;
-                              }
-                              $instagram_post_width = $post_width;
-                              $instagram_post_height = $post_height;
-                              $image_resolution = explode(' x ', $image_row->resolution);
-                              if ( is_array($image_resolution) ) {
-                                $instagram_post_width = $image_resolution[0];
-                                $instagram_post_height = explode(' ', $image_resolution[1]);
-                                $instagram_post_height = $instagram_post_height[0];
+                                $instagram_width = $instagram_width + $feedback_social_proof_height;
                               }
                               WDWLibraryEmbed::display_embed($image_row->filetype, $image_row->image_url, $image_row->filename, array(
-                                'class' => "bwg_embed_frame_" . $bwg,
-                                'data-width' => $instagram_post_width,
-                                'data-height' => $instagram_post_height,
-                                'frameborder' => "0",
-                                'style' => "width:" . $post_width . "px; height:" . $post_height . "px; vertical-align:middle; display:inline-block; position:relative;"
+                                'class' => 'bwg_embed_frame_' . $bwg,
+                                'data-width' => $maxWidth,
+                                'data-height' => $maxHeight,
+                                'data-instagram-width' => $srcWidth,
+                                'data-instagram-height' => $srcHeight,
+                                'style' => 'width:' . $instagram_width . 'px; height:' . $instagram_height . 'px; vertical-align:middle; display:inline-block; position:relative;'
                               ));
                             }
                             else {
@@ -365,64 +384,73 @@ public function display($params = array(), $bwg = 0) {
                       </span>
                     </span>
                   </span>
-                <span class="bwg_slideshow_image_second_spun_<?php echo $bwg; ?>">
+                <span class="bwg_slideshow_image_second_spun_<?php echo sanitize_html_class($bwg); ?>">
                   </span>
-                <input type="hidden" id="bwg_current_image_key_<?php echo $bwg; ?>" value="<?php echo $key; ?>" />
+                <input type="hidden" id="bwg_current_image_key_<?php echo sanitize_html_class($bwg); ?>" value="<?php echo esc_attr($key); ?>" />
                 <?php
                 break;
               }
               else {
                 ?>
-                <span class="bwg_slideshow_image_second_spun_<?php echo $bwg; ?>" id="image_id_<?php echo $bwg; ?>_<?php echo $image_row->id; ?>">
-                    <span class="bwg_slideshow_image_spun1_<?php echo $bwg; ?>">
-                      <span class="bwg_slideshow_image_spun2_<?php echo $bwg; ?>">
+                <span class="bwg_slideshow_image_second_spun_<?php echo sanitize_html_class($bwg); ?>" id="image_id_<?php echo sanitize_html_class($bwg.'_'.$image_row->id); ?>">
+                    <span class="bwg_slideshow_image_spun1_<?php echo sanitize_html_class($bwg); ?>">
+                      <span class="bwg_slideshow_image_spun2_<?php echo sanitize_html_class($bwg); ?>">
                         <?php
                         if ( !$is_embed ) {
                           ?>
-                          <a <?php echo($params['thumb_click_action'] == 'open_lightbox' ? (' class="bwg-a bwg_lightbox_' . $bwg . '"' . (BWG()->options->enable_seo ? ' href="' . ($is_embed ? $image_row->thumb_url : BWG()->upload_url . $image_row->image_url) . '"' : '') . ' data-image-id="' . $image_row->id . '"') : ('class="bwg-a" ' . ($params['thumb_click_action'] == 'redirect_to_url' && $image_row->redirect_url ? 'href="' . $image_row->redirect_url . '" target="' . ($params['thumb_link_target'] ? '_blank' : '') . '"' : ''))) ?>>
-                          <img id="bwg_slideshow_image_<?php echo $bwg; ?>"
-                               class="skip-lazy  bwg_slide bwg_slideshow_image_<?php echo $bwg; ?> <?php if( $lazyload ) { ?> bwg_lazyload lazy_loader <?php } ?>"
-                               src="<?php if( !$lazyload ) { echo BWG()->upload_url . $image_row->image_url; } else { echo BWG()->plugin_url."/images/lazy_placeholder.gif"; } ?>"
-                               data-original="<?php echo BWG()->upload_url . $image_row->image_url; ?>"
-                               image_id="<?php echo $image_row->id; ?>"
-                               alt="<?php echo $image_row->alt; ?>" />
+                          <a <?php echo($params['thumb_click_action'] == 'open_lightbox' ? (' class="bwg-a bwg_lightbox_' . sanitize_html_class($bwg) . '"' . (BWG()->options->enable_seo ? ' href="' . esc_url($is_embed ? $image_row->thumb_url : BWG()->upload_url . $image_row->image_url) . '"' : '') . ' data-image-id="' . esc_attr($image_row->id) . '"') : ('class="bwg-a" ' . ($params['thumb_click_action'] == 'redirect_to_url' && $image_row->redirect_url ? 'href="' . esc_url($image_row->redirect_url) . '" target="' . ($params['thumb_link_target'] ? '_blank' : '') . '"' : ''))) ?>>
+                          <img id="bwg_slideshow_image_<?php echo sanitize_html_class($bwg); ?>"
+                               class="skip-lazy  bwg_slide bwg_slideshow_image_<?php echo sanitize_html_class($bwg); ?> <?php if( $lazyload ) { ?> bwg_lazyload lazy_loader <?php } ?>"
+                               src="<?php if( !$lazyload ) { echo esc_url(BWG()->upload_url . $image_row->image_url); } else { echo esc_url(BWG()->plugin_url."/images/lazy_placeholder.gif"); } ?>"
+                               data-src="<?php echo esc_url(BWG()->upload_url . $image_row->image_url); ?>"
+                               image_id="<?php echo esc_attr($image_row->id); ?>"
+                               alt="<?php echo esc_attr($image_row->alt); ?>" />
                           </a>
                           <?php
                         }
                         else {   /*$is_embed*/ ?>
-                          <span class="bwg_slideshow_embed_<?php echo $bwg; ?>">
+                          <span class="bwg_slideshow_embed_<?php echo sanitize_html_class($bwg); ?>">
                               <?php
                               if ( $is_embed_instagram_post ) {
-                                $post_width = $image_width - ($filmstrip_direction == 'vertical' ? $slideshow_filmstrip_width : 0);
-                                $post_height = $image_height - ($filmstrip_direction == 'horizontal' ? $slideshow_filmstrip_height : 0);
-                                if ( $post_height < $post_width + 88 ) {
-                                  $post_width = $post_height - 88;
+                                $srcWidth = 640;
+                                $srcHeight = 640;
+                                /* HoverCard, Feedback, SocialProof height from Instagram */
+                                $feedback_social_proof_height = 109;
+                                $maxWidth = $image_width - ($filmstrip_direction == 'vertical' ? $slideshow_filmstrip_width : 0);
+                                $maxHeight = $image_height - ($filmstrip_direction == 'horizontal' ? $slideshow_filmstrip_height : 0);
+
+                                if ( !empty($image_row->resolution) ) {
+                                  $image_resolution = explode(' x ', $image_row->resolution);
+                                  if ( is_array($image_resolution) ) {
+                                    $srcWidth = $image_resolution[0];
+                                    $srcHeight = explode(' ', $image_resolution[1]);
+                                    $srcHeight = $srcHeight[0];
+                                  }
+                                }
+                                $instagram_resizing = WDWLibrary::bwg_resizing_ratio( $srcWidth, $srcHeight, $maxWidth, $maxHeight );
+                                $instagram_width  = $instagram_resizing['width'];
+                                $instagram_height = $instagram_resizing['height'];
+                                if ( $instagram_height > $instagram_width ) {
+                                  $instagram_width = $instagram_width - $feedback_social_proof_height;
                                 }
                                 else {
-                                  $post_height = $post_width + 88;
-                                }
-                                $instagram_post_width = $post_width;
-                                $instagram_post_height = $post_height;
-                                $image_resolution = explode(' x ', $image_row->resolution);
-                                if ( is_array($image_resolution) ) {
-                                  $instagram_post_width = $image_resolution[0];
-                                  $instagram_post_height = explode(' ', $image_resolution[1]);
-                                  $instagram_post_height = $instagram_post_height[0];
+                                  $instagram_width = $instagram_width + $feedback_social_proof_height;
                                 }
                                 WDWLibraryEmbed::display_embed($image_row->filetype, $image_row->image_url, $image_row->filename, array(
-                                  'class' => "bwg_embed_frame_" . $bwg,
-                                  'data-width' => $instagram_post_width,
-                                  'data-height' => $instagram_post_height,
-                                  'frameborder' => "0",
-                                  'style' => "width:" . $post_width . "px; height:" . $post_height . "px; vertical-align:middle; display:inline-block; position:relative;"
+                                  'class' => 'bwg_embed_frame_' . $bwg,
+                                  'data-width' => $maxWidth,
+                                  'data-height' => $maxHeight,
+                                  'data-src-width' => $srcWidth,
+                                  'data-src-height' => $srcHeight,
+                                  'style' => 'width:' . $instagram_width . 'px; height:' . $instagram_height . 'px; vertical-align:middle; display:inline-block; position:relative;'
                                 ));
                               }
                               else {
                                 WDWLibraryEmbed::display_embed($image_row->filetype, $image_row->image_url, $image_row->filename, array(
-                                  'class' => "bwg_embed_frame_" . $bwg,
-                                  'frameborder' => "0",
-                                  'allowfullscreen' => "allowfullscreen",
-                                  'style' => "width:inherit; height:inherit; vertical-align:middle; display:table-cell;"
+                                  'class' => 'bwg_embed_frame_' . $bwg,
+                                  'frameborder' => '0',
+                                  'allowfullscreen' => 'allowfullscreen',
+                                  'style' => 'width:inherit; height:inherit; vertical-align:middle; display:table-cell;'
                                 ));
                               }
                               ?>
@@ -443,9 +471,9 @@ public function display($params = array(), $bwg = 0) {
       <?php
       if ( $enable_slideshow_ctrl ) {
         ?>
-        <a class="bwg-a" id="spider_slideshow_left_<?php echo $bwg; ?>" onclick="bwg_change_image(parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()), (parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()) + <?php echo count($data[$bwg]); ?> - bwg_iterator(<?php echo $bwg; ?>)) % <?php echo count($data[$bwg]); ?>, '', '', <?php echo $bwg; ?>); return false;"><span id="spider_slideshow_left-ico_<?php echo $bwg; ?>"><span><i class="<?php echo $theme_row->slideshow_rl_btn_style; ?>-left bwg_slideshow_prev_btn_<?php echo $bwg; ?>"></i></span></span></a>
-        <span id="bwg_slideshow_play_pause_<?php echo $bwg; ?>" class="bwg_slideshow_play_pause" style="display: <?php echo $play_pause_button_display; ?>;"><span><span id="bwg_slideshow_play_pause-ico_<?php echo $bwg; ?>"><i class="bwg-icon-play bwg_ctrl_btn_<?php echo $bwg; ?> bwg_slideshow_play_pause_<?php echo $bwg; ?>"></i></span></span></span>
-        <a class="bwg-a" id="spider_slideshow_right_<?php echo $bwg; ?>" onclick="bwg_change_image(parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()), (parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()) + bwg_iterator(<?php echo $bwg; ?>)) % <?php echo count($data[$bwg]); ?>, '', '', <?php echo $bwg; ?>); return false;"><span id="spider_slideshow_right-ico_<?php echo $bwg; ?>"><span><i class="<?php echo $theme_row->slideshow_rl_btn_style; ?>-right bwg_slideshow_next_btn_<?php echo $bwg; ?>"></i></span></span></a>
+        <a class="bwg-a" id="spider_slideshow_left_<?php echo sanitize_html_class($bwg); ?>" onclick="bwg_change_image(parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()), (parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()) + <?php echo count($data[$bwg]); ?> - bwg_iterator(<?php echo $bwg; ?>)) % <?php echo count($data[$bwg]); ?>, '', '', <?php echo $bwg; ?>); return false;"><span id="spider_slideshow_left-ico_<?php echo sanitize_html_class($bwg); ?>"><span><i class="<?php echo sanitize_html_class($theme_row->slideshow_rl_btn_style); ?>-left bwg_slideshow_prev_btn_<?php echo sanitize_html_class($bwg); ?>"></i></span></span></a>
+        <span id="bwg_slideshow_play_pause_<?php echo sanitize_html_class($bwg); ?>" class="bwg_slideshow_play_pause" style="display: <?php echo $play_pause_button_display; ?>;"><span><span id="bwg_slideshow_play_pause-ico_<?php echo sanitize_html_class($bwg); ?>"><i class="bwg-icon-play bwg_ctrl_btn_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_play_pause_<?php echo sanitize_html_class($bwg); ?>"></i></span></span></span>
+        <a class="bwg-a" id="spider_slideshow_right_<?php echo sanitize_html_class($bwg); ?>" onclick="bwg_change_image(parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()), (parseInt(jQuery('#bwg_current_image_key_<?php echo $bwg; ?>').val()) + bwg_iterator(<?php echo $bwg; ?>)) % <?php echo count($data[$bwg]); ?>, '', '', <?php echo $bwg; ?>); return false;"><span id="spider_slideshow_right-ico_<?php echo sanitize_html_class($bwg); ?>"><span><i class="<?php echo sanitize_html_class($theme_row->slideshow_rl_btn_style); ?>-right bwg_slideshow_next_btn_<?php echo sanitize_html_class($bwg); ?>"></i></span></span></a>
         <?php
       }
       ?>
@@ -453,21 +481,21 @@ public function display($params = array(), $bwg = 0) {
     <?php
     if ( $params['watermark_type'] != 'none' ) {
       ?>
-      <div class="bwg_slideshow_image_container_<?php echo $bwg; ?> bwg_slideshow_image_container" data-params="<?php echo $bwg_params; ?>">
-        <div class="bwg_slideshow_watermark_container_<?php echo $bwg; ?>">
+      <div class="bwg_slideshow_image_container_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_image_container" data-params="<?php echo esc_attr($bwg_params); ?>">
+        <div class="bwg_slideshow_watermark_container_<?php echo sanitize_html_class($bwg); ?>">
           <div>
-              <span class="bwg_slideshow_watermark_spun_<?php echo $bwg; ?>" id="bwg_slideshow_watermark_container_<?php echo $bwg; ?>">
+              <span class="bwg_slideshow_watermark_spun_<?php echo sanitize_html_class($bwg); ?>" id="bwg_slideshow_watermark_container_<?php echo sanitize_html_class($bwg); ?>">
                 <?php
                 if ( $params['watermark_type'] == 'image' ) {
                   ?>
                   <a class="bwg-a" href="<?php echo urldecode($watermark_link); ?>" target="_blank">
-                  <img class="bwg_slideshow_watermark_image_<?php echo $bwg; ?> bwg_slideshow_watermark_<?php echo $bwg; ?>" src="<?php echo urldecode($watermark_url); ?>" />
+                  <img class="bwg_slideshow_watermark_image_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_watermark_<?php echo sanitize_html_class($bwg); ?>" src="<?php echo urldecode($watermark_url); ?>" />
                 </a>
                   <?php
                 }
                 elseif ( $params['watermark_type'] == 'text' ) {
                   ?>
-                  <a class="bwg_none_selectable_<?php echo $bwg; ?> bwg_slideshow_watermark_text_<?php echo $bwg; ?> bwg_slideshow_watermark_<?php echo $bwg; ?>" target="_blank" href="<?php echo urldecode($watermark_link); ?>"><?php echo $params['watermark_text']; ?></a>
+                  <a class="bwg_none_selectable_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_watermark_text_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_watermark_<?php echo sanitize_html_class($bwg); ?>" target="_blank" href="<?php echo urldecode($watermark_link); ?>"><?php echo esc_html($params['watermark_text']); ?></a>
                   <?php
                 }
                 ?>
@@ -479,11 +507,11 @@ public function display($params = array(), $bwg = 0) {
     }
     if ( $enable_image_title ) {
       ?>
-      <div class="bwg_slideshow_image_container_<?php echo $bwg; ?> bwg_slideshow_image_container" data-params="<?php echo $bwg_params; ?>">
-        <div class="bwg_slideshow_watermark_container_<?php echo $bwg; ?>">
+      <div class="bwg_slideshow_image_container_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_image_container" data-params="<?php echo esc_attr($bwg_params); ?>">
+        <div class="bwg_slideshow_watermark_container_<?php echo sanitize_html_class($bwg); ?>">
           <div>
-              <span class="bwg_slideshow_title_spun_<?php echo $bwg; ?>">
-                <div class="bwg_slideshow_title_text_<?php echo $bwg; ?> <?php if ( !$current_image_alt ) {
+              <span class="bwg_slideshow_title_spun_<?php echo sanitize_html_class($bwg); ?>">
+                <div class="bwg_slideshow_title_text_<?php echo sanitize_html_class($bwg); ?> <?php if ( !$current_image_alt ) {
                   echo 'bwg-hidden';
                 } ?>">
                   <?php echo html_entity_decode($current_image_alt); ?>
@@ -496,11 +524,11 @@ public function display($params = array(), $bwg = 0) {
     }
     if ( $enable_image_description && isset($current_image_description) ) {
       ?>
-      <div class="bwg_slideshow_image_container_<?php echo $bwg; ?> bwg_slideshow_image_container" data-params="<?php echo $bwg_params; ?>">
-        <div class="bwg_slideshow_watermark_container_<?php echo $bwg; ?>">
+      <div class="bwg_slideshow_image_container_<?php echo sanitize_html_class($bwg); ?> bwg_slideshow_image_container" data-params="<?php echo esc_attr($bwg_params); ?>">
+        <div class="bwg_slideshow_watermark_container_<?php echo sanitize_html_class($bwg); ?>">
           <div>
-              <span class="bwg_slideshow_description_spun_<?php echo $bwg; ?>">
-                <div class="bwg_slideshow_description_text_<?php echo $bwg; ?> <?php if ( !$current_image_description ) {
+              <span class="bwg_slideshow_description_spun_<?php echo sanitize_html_class($bwg); ?>">
+                <div class="bwg_slideshow_description_text_<?php echo sanitize_html_class($bwg); ?> <?php if ( !$current_image_description ) {
                   echo 'bwg-hidden';
                 } ?>">
                   <?php echo html_entity_decode(str_replace("\r\n", esc_html('<br />'), $current_image_description)); ?>
@@ -513,7 +541,7 @@ public function display($params = array(), $bwg = 0) {
     }
     if ( $enable_slideshow_music ) {
       ?>
-      <audio id="bwg_audio_<?php echo $bwg; ?>" src="<?php echo $slideshow_music_url ?>" loop volume="1.0"></audio>
+      <audio id="bwg_audio_<?php echo sanitize_html_class($bwg); ?>" src="<?php echo esc_url($slideshow_music_url) ?>" loop volume="1.0"></audio>
       <?php
     }
     ?>
@@ -522,7 +550,7 @@ public function display($params = array(), $bwg = 0) {
     $content = ob_get_clean();
   }
 
-	if ( $params['ajax'] ) { /* Ajax response after ajax call for filters and pagination.*/
+  if ( $ajax ) { /* Ajax response after ajax call for filters and pagination.*/
       parent::ajax_content($params, $bwg, $content);
     }
     else {
@@ -553,22 +581,22 @@ public function inline_styles($bwg, $theme_row, $params, $image_width, $image_he
 	  max-height: <?php echo $image_height - ($filmstrip_direction == 'horizontal' ? $slideshow_filmstrip_height : 0); ?>px;
   }
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> .bwg_slideshow_embed_<?php echo $bwg; ?> {
-	width: <?php echo $image_width - ($filmstrip_direction == 'vertical' ? $slideshow_filmstrip_width : 0); ?>px;
-	height: <?php echo $image_height - ($filmstrip_direction == 'horizontal' ? $slideshow_filmstrip_height : 0); ?>px;
+    width: <?php echo $image_width - ($filmstrip_direction == 'vertical' ? $slideshow_filmstrip_width : 0); ?>px;
+    height: <?php echo $image_height - ($filmstrip_direction == 'horizontal' ? $slideshow_filmstrip_height : 0); ?>px;
   }
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> #bwg_slideshow_play_pause_<?php echo $bwg; ?> {
-	background: transparent url("<?php echo BWG()->plugin_url . '/images/blank.gif'; ?>") repeat scroll 0 0;
+	  background: transparent url("<?php echo BWG()->plugin_url . '/images/blank.gif'; ?>") repeat scroll 0 0;
   }
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> #bwg_slideshow_play_pause-ico_<?php echo $bwg; ?> {
-	color: #<?php echo $theme_row->slideshow_rl_btn_color; ?>;
-	font-size: <?php echo $theme_row->slideshow_play_pause_btn_size; ?>px;
+    color: #<?php echo $theme_row->slideshow_rl_btn_color; ?>;
+    font-size: <?php echo $theme_row->slideshow_play_pause_btn_size; ?>px;
   }
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> #bwg_slideshow_play_pause-ico_<?php echo $bwg; ?>:hover {
-	color: #<?php echo $theme_row->slideshow_close_rl_btn_hover_color; ?>;
+	  color: #<?php echo $theme_row->slideshow_close_rl_btn_hover_color; ?>;
   }
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> #spider_slideshow_left_<?php echo $bwg; ?>,
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> #spider_slideshow_right_<?php echo $bwg; ?> {
-	background: transparent url("<?php echo BWG()->plugin_url . '/images/blank.gif'; ?>") repeat scroll 0 0;
+	  background: transparent url("<?php echo BWG()->plugin_url . '/images/blank.gif'; ?>") repeat scroll 0 0;
   }
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> #spider_slideshow_left-ico_<?php echo $bwg; ?>,
   #bwg_container1_<?php echo $bwg; ?> #bwg_container2_<?php echo $bwg; ?> #spider_slideshow_right-ico_<?php echo $bwg; ?> {

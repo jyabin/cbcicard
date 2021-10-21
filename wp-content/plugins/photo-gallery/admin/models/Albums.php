@@ -52,6 +52,12 @@ class AlbumsModel_bwg {
     }
     if ( !$total ) {
       $rows = $wpdb->get_results($wpdb->prepare($query, $prepareArgs));
+      if ( !empty($rows) ) {
+        foreach ( $rows as $row ) {
+          $row->preview_image = esc_url($row->preview_image);
+          $row->random_preview_image = esc_url($row->random_preview_image);
+        }
+      }
     }
     else {
       $rows = $wpdb->get_var($wpdb->prepare($query, $prepareArgs));
@@ -321,6 +327,12 @@ class AlbumsModel_bwg {
     $row->author = ($user_data != FALSE ? $user_data->display_name : '');
     $row->name = stripslashes(esc_html($row->name));
     $row->description = stripslashes(esc_html($row->description));
+    if ( isset($row->preview_image) ) {
+      $row->preview_image = esc_url($row->preview_image);
+    }
+    if ( isset($row->random_preview_image) ) {
+      $row->random_preview_image = esc_url($row->random_preview_image);
+    }
 
     return $row;
   }
@@ -342,7 +354,7 @@ class AlbumsModel_bwg {
     $old_slug = WDWLibrary::get('old_slug');
 	  $published = WDWLibrary::get('published', 0, 'intval');
     $preview_image = WDWLibrary::get('preview_image', '', 'esc_url_raw');
-    $description = strip_tags(htmlspecialchars_decode(WDWLibrary::get('description', '', 'wp_filter_post_kses')),"<b>,<p>,<a>,<strong>,<span>,<br>,<ul>,<ol>,<li>,<i>");
+    $description = WDWLibrary::strip_tags(htmlspecialchars_decode(WDWLibrary::get('description', '', 'wp_filter_post_kses')));
     $albumgallery_ids = WDWLibrary::get('albumgallery_ids');
     $modified_date = WDWLibrary::get('modified_date', time(),'intval');
     $data = array(

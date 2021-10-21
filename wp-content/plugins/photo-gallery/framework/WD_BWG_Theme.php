@@ -543,12 +543,34 @@ class WD_BWG_Theme {
   public $thumb_bg_transparency = 30;
   public $thumbs_bg_color = "FFFFFF";
 
+  public $tags_view = 1;
+  public $tags_but_font_color = "323A45";
+  public $tags_but_font_size = 14;
+  public $tags_but_font_style = "Ubuntu";
+  public $tags_but_font_weight = "normal";
+  public $tags_but_margin = "0px 5px 10px 5px";
+  public $tags_but_padding = "6px 6px 6px 6px";
+  public $tags_but_border_width = 0;
+  public $tags_but_border_style = "none";
+  public $tags_but_border_color = "E9EBEE";
+  public $tags_but_border_radius = "4px";
+  public $tags_but_bg_color = "E9EBEE";
+  public $tags_but_active_bg_color = "2160B5";
+  public $tags_but_active_color = "FFFFFF";
+  public $tags_but_see_all_size = 14;
+  public $tags_but_see_all_color = "323A45";
+  public $tags_but_see_all_back_color = "F8F8F8";
+  public $tags_but_see_all_border_w = 1;
+  public $tags_but_see_all_border_s = "solid";
+  public $tags_but_see_all_border_c = "E5E5E5";
+  public $tags_but_see_all_border_r = "20px";
+
   public function __construct($id = 0, $reset = false, $predefined_version = false, $active_tab = 'Thumbnail') {
     if ( !$id || $predefined_version ) {
       unset($this->id);
       unset($this->name);
       unset($this->default_theme);
-      if ('Dark' == $predefined_version) {
+      if ( 'Dark' == $predefined_version ) {
         $this->album_compact_back_font_color = "323A45";
         $this->album_compact_back_font_size = 15;
         $this->album_compact_back_font_style = "Ubuntu";
@@ -1070,6 +1092,27 @@ class WD_BWG_Theme {
         $this->thumb_transparent = 100;
         $this->thumb_bg_transparency = 30;
         $this->thumbs_bg_color = "FFFFFF";
+       $this->tags_view = 1;
+       $this->tags_but_font_color = "323A45";
+       $this->tags_but_font_size = 14;
+       $this->tags_but_font_style = "Ubuntu";
+       $this->tags_but_font_weight = "normal";
+       $this->tags_but_margin = "0px 5px 10px 5px";
+       $this->tags_but_padding = "6px 6px 6px 6px";
+       $this->tags_but_border_width = 0;
+       $this->tags_but_border_style = "none";
+       $this->tags_but_border_color = "E9EBEE";
+       $this->tags_but_border_radius = "4px";
+       $this->tags_but_bg_color = "E9EBEE";
+       $this->tags_but_active_bg_color = "2160B5";
+       $this->tags_but_active_color = "FFFFFF";
+       $this->tags_but_see_all_size = 14;
+       $this->tags_but_see_all_color = "323A45";
+       $this->tags_but_see_all_back_color = "F8F8F8";
+       $this->tags_but_see_all_border_w = 1;
+       $this->tags_but_see_all_border_s = "solid";
+       $this->tags_but_see_all_border_c = "E5E5E5";
+       $this->tags_but_see_all_border_r = "20px";
       }
     }
     global $wpdb;
@@ -1085,7 +1128,7 @@ class WD_BWG_Theme {
           if ( !empty($row_default) && $row_default->options ) {
             $themes = json_decode($row_default->options);
             foreach ( $themes as $key => $value ) {
-              if ( 0 ===  strpos($key, $obj_prefix) ) {
+              if ( 0 === strpos($key, $obj_prefix) ) {
                 $row_current->$key = $value;
               }
             }
@@ -1121,6 +1164,7 @@ class WD_BWG_Theme {
       }
     }
   }
+
   /**
    * Get prefix of theme fields object
    *
@@ -1167,7 +1211,11 @@ class WD_BWG_Theme {
       case 'Carousel':
         $obj_start = 'carousel_';
         break;
+      case 'Tags':
+        $obj_start = 'tags_';
+        break;
     }
+
     return $obj_start;
   }
 
@@ -1202,7 +1250,8 @@ class WD_BWG_Theme {
       'mosaic_thumb_title_font_style' => 'mosaic_thumb_title_google_fonts',
       'page_nav_font_style' => 'page_nav_google_fonts',
       'slideshow_description_font' => 'slideshow_description_google_fonts',
-      'slideshow_title_font' => 'slideshow_title_google_fonts'
+      'slideshow_title_font' => 'slideshow_title_google_fonts',
+	 'tags_but_font_style' => 'tags_but_google_fonts',
     );
     if ( array_key_exists( $name, $input_names ) ) {
       return $input_names[ $name ];

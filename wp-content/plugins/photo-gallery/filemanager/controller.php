@@ -41,8 +41,8 @@ class FilemanagerController {
   }
 
   public function display() {
-	$params = array();
-	$dir = $this->model->get_from_session('dir', '');
+    $params = array();
+    $dir = str_replace(array('\\', '../'), '', $this->model->get_from_session('dir', ''));
     $search = $this->model->get_from_session('search', '');
     $page_num = $this->model->get_from_session('paged', 0);
     $callback = $this->model->get_from_session('callback', '');
@@ -98,14 +98,14 @@ class FilemanagerController {
   }
 
   function pagination() {
-	$dir = $this->model->get_from_session('dir', '');
-	$dir = ($dir == '') ? '/' : $dir .'/';
-	$order   = $this->model->get_from_session('order', 'desc');
-	$orderby = $this->model->get_from_session('orderby', 'date_modified');
-	$search = $this->model->get_from_session('search', '');
-	$paged = $this->model->get_from_session('paged', 0);
-	$page_per = $this->page_per;
-	$data = $this->model->get_file_lists(
+    $dir = str_replace(array('\\', '../'), '', $this->model->get_from_session('dir', ''));
+    $dir = ($dir == '') ? '/' : $dir .'/';
+    $order   = $this->model->get_from_session('order', 'desc');
+    $orderby = $this->model->get_from_session('orderby', 'date_modified');
+    $search = $this->model->get_from_session('search', '');
+    $paged = $this->model->get_from_session('paged', 0);
+    $page_per = $this->page_per;
+    $data = $this->model->get_file_lists(
 		array(
 		'dir' => $dir,
 		'order' => $order,
@@ -154,7 +154,7 @@ class FilemanagerController {
   public function make_dir() {
 
     global $wpdb;
-    $input_dir = (isset($_REQUEST['dir']) ? str_replace('\\', '', WDWLibrary::get('dir','','sanitize_text_field','REQUEST')) : '');
+    $input_dir = (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir','','sanitize_text_field','REQUEST')) : '');
     $input_dir = htmlspecialchars_decode($input_dir, ENT_COMPAT | ENT_QUOTES);
     $input_dir = $this->esc_dir($input_dir);
 
@@ -220,9 +220,9 @@ class FilemanagerController {
   }
 
   public function parsing_items() {
-		$dir = $this->model->get_from_session('dir', '');
+		$dir = str_replace(array('\\', '../'), '', $this->model->get_from_session('dir', ''));
 		$dir = ($dir == '' || $dir == '/') ? '/' : $dir .'/';
-		$input_dir = (isset($_REQUEST['dir']) ? str_replace('\\', '', WDWLibrary::get('dir','','sanitize_text_field','REQUEST')) : '');
+		$input_dir = (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) : '');
 		$valid_types = explode(',', 'jpg,jpeg,png,gif,svg');
 		$parsing = $this->model->files_parsing_db(array(
 			'refresh' => true,
@@ -249,8 +249,8 @@ class FilemanagerController {
 	}
 
   public function rename_item() {
-	global $wpdb;
-    $input_dir = (isset($_REQUEST['dir']) ? str_replace('\\', '', WDWLibrary::get('dir','','sanitize_text_field','REQUEST')) : '');
+	  global $wpdb;
+    $input_dir = (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) : '');
     $input_dir = htmlspecialchars_decode($input_dir, ENT_COMPAT | ENT_QUOTES);
     $input_dir = $this->esc_dir($input_dir);
 
@@ -397,7 +397,7 @@ class FilemanagerController {
 
   public function remove_items() {
     global $wpdb;
-    $input_dir = (isset($_REQUEST['dir']) ? str_replace('\\', '', (WDWLibrary::get('dir','','sanitize_text_field','REQUEST'))) : '');
+    $input_dir = (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) : '');
     $input_dir = htmlspecialchars_decode($input_dir, ENT_COMPAT | ENT_QUOTES);
     $input_dir = $this->esc_dir($input_dir);
 
@@ -458,7 +458,7 @@ class FilemanagerController {
 
   public function paste_items() {
 	global $wpdb;
-	$input_dir = (isset($_REQUEST['dir']) ? str_replace('\\', '', (WDWLibrary::get('dir','','sanitize_text_field','REQUEST'))) : '');
+	$input_dir = (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) : '');
 	$input_dir = htmlspecialchars_decode($input_dir, ENT_COMPAT | ENT_QUOTES);
 	$input_dir = $this->esc_dir($input_dir);
 
@@ -683,7 +683,7 @@ class FilemanagerController {
 
   public function import_items() {
     $args = array(
-      'action' => 'bwg_UploadHandler',
+      'action' => 'bwg_upl',
       'importer_thumb_width' => WDWLibrary::get('importer_thumb_width','','intval','REQUEST'),
       'importer_thumb_height' => WDWLibrary::get('importer_thumb_height','','intval','REQUEST'),
       'callback' => WDWLibrary::get('callback','','sanitize_text_field','REQUEST'),
@@ -691,11 +691,11 @@ class FilemanagerController {
       'importer_img_width' => WDWLibrary::get('importer_img_width','','intval','REQUEST'),
       'importer_img_height' => WDWLibrary::get('importer_img_height','','intval','REQUEST'),
       'import' => 'true',
-      'redir' => WDWLibrary::get('dir','','sanitize_text_field','REQUEST'),
-      'dir' => WDWLibrary::get('dir','','sanitize_text_field','REQUEST') . '/',
+      'redir' => str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')),
+      'dir' => str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) . '/',
     );
 
-    $query_url = wp_nonce_url( admin_url('admin-ajax.php'), 'bwg_UploadHandler', 'bwg_nonce' );
+    $query_url = wp_nonce_url( admin_url('admin-ajax.php'), 'bwg_upl', 'bwg_nonce' );
     $query_url = add_query_arg($args, $query_url);
     header('Location: ' . $query_url);
     exit;

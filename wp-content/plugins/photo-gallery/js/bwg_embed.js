@@ -52,12 +52,12 @@ function spider_display_embed(embed_type, file_url, embed_id, attrs) {
         oembed_flickr_html += " >";
         if(embed_id!=''){
         
-        oembed_flickr_html += '<img src="'+embed_id+'"'+ 
+        oembed_flickr_html += '<img src="'+embed_id+'"'+
         ' style="'+
         'max-width:'+'100%'+" !important"+
         '; max-height:'+'100%'+" !important"+
         '; width:'+'auto !important'+
-        '; height:'+ 'auto !important' + 
+        '; height:'+ 'auto !important' +
         ';">';
         }
 
@@ -97,6 +97,8 @@ function spider_display_embed(embed_type, file_url, embed_id, attrs) {
       html_to_insert += oembed_instagram_html;
       break;
     case 'EMBED_OEMBED_INSTAGRAM_IMAGE':
+      var max_width  = attrs['data-max-width'];
+      var max_height = attrs['data-max-height'];
       var oembed_instagram_html = '<div ';
       for ( attr in attrs ) {
         if ( !(/src/i).test(attr) ) {
@@ -107,13 +109,7 @@ function spider_display_embed(embed_type, file_url, embed_id, attrs) {
       }
       oembed_instagram_html += " >";
       if ( file_url != '' ) {
-        oembed_instagram_html += '<img src="' + decodeURIComponent(file_url) + '"' +
-          ' style=" ' +
-          'max-width:' + '100%' + " !important" +
-          '; max-height:' + '100%' + " !important" +
-          '; width:' + 'auto' +
-          '; height:' + 'auto' +
-          ';">';
+        oembed_instagram_html += '<img src="' + decodeURIComponent(file_url) + '"' + ' style="max-width:' + max_width + 'px; max-height:' + max_height + 'px; width: auto; height: auto">';
       }
       oembed_instagram_html += "</div>";
       html_to_insert += oembed_instagram_html;
@@ -133,8 +129,9 @@ function spider_display_embed(embed_type, file_url, embed_id, attrs) {
       }
       oembed_instagram_html += ">";
       if ( file_url != '' ) {
-        oembed_instagram_html += '<div class="inner_instagram_iframe_' + obj_class + '" frameborder="0" scrolling="no" allowtransparency="false" allowfullscreen ' +
-          ' style="max-width: 100% !important; max-height: 100% !important; width: 100%; height: 100%; margin:0; vertical-align:middle;">' + atob(file_url) + '</div>';
+        oembed_instagram_html += '<div class="inner_instagram_iframe_' + obj_class + '" style="max-width: 100% !important; max-height: 100% !important; width: 100%; height: 100%; margin:0; vertical-align:middle;">'
+          + atob(file_url)
+          + '</div>';
       }
       oembed_instagram_html += "</div>";
       html_to_insert += oembed_instagram_html;
@@ -260,7 +257,6 @@ function spider_display_embed(embed_type, file_url, embed_id, attrs) {
   }
   
   return html_to_insert
-
 }
 
 /**
@@ -309,7 +305,7 @@ function bwg_add_instagram_gallery(instagram_access_token, from_popup){
     'instagram_access_token': instagram_access_token,
     'whole_post': whole_post,
     'autogallery_image_number':autogallery_image_number,
-    'update_flag':update_flag,
+    'update_flag': update_flag,
     'async':true
   };
 
@@ -356,7 +352,7 @@ function bwg_add_instagram_gallery(instagram_access_token, from_popup){
           }
           return false;
         }
-        else{
+        else {
           var len = response_JSON.length;
           for (var i=1; i<=len; i++) {
             if(response_JSON[len-i]!= false){

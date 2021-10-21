@@ -111,17 +111,16 @@ class BWGControllerSite {
         } elseif ($params['gallery_view_type'] == 'carousel') {
           $params['gallery_type'] = 'carousel';
         }
-
-        if (isset($params['compuct_album_image_thumb_width'])) { // Compact album view.
+        if ( $params["gallery_type"] == "album_compact_preview" ) { // Compact album view.
           $params['image_enable_page'] = $params['compuct_album_enable_page'];
           $params['images_per_page'] = $params['compuct_albums_per_page'];
           $params['items_col_num'] = $params['compuct_album_column_number'];
-        } elseif (isset($params['extended_album_image_thumb_width'])) { // Extended album view.
+        } elseif ( $params["gallery_type"] == "album_extended_preview" ) { // Extended album view.
           $params['image_enable_page'] = $params['extended_album_enable_page'];
           $params['images_per_page'] = $params['extended_albums_per_page'];
           $params['items_col_num'] = $params['extended_album_image_column_number'];
           $params['image_column_number'] = $params['extended_album_image_column_number'];
-        } elseif (isset($params['masonry_album_thumb_width'])) {
+        } elseif ( $params["gallery_type"] ==  "album_masonry_preview" ) {
           $params['image_enable_page'] = $params['masonry_album_enable_page'];
           $params['images_per_page'] = $params['masonry_albums_per_page'];
           $params['items_col_num'] = $params['masonry_album_column_number'];
@@ -141,7 +140,7 @@ class BWGControllerSite {
       else { // Gallery views (thumbnail/masonry/mosaic).
         /* Set parameters for gallery view from album shortcode.*/
         /* album used all parmas for view */
-        if (isset($params['compuct_album_image_thumb_width'])) { // Compact album view.
+        if ( $params["gallery_type"] == "album_compact_preview" ) { // Compact album view.
           $params['thumb_width'] = $params['compuct_album_image_thumb_width'];
           $params['thumb_height'] = $params['compuct_album_image_thumb_height'];
           $params['image_title'] = $params['compuct_album_image_title'];
@@ -154,7 +153,7 @@ class BWGControllerSite {
           $params['mosaic_total_width'] = $params['compuct_album_mosaic_total_width'];
 
           $params['items_col_num'] = $params['compuct_album_column_number'];
-        } elseif (isset($params['extended_album_image_thumb_width'])) { // Extended album view.
+        } elseif ( $params["gallery_type"] == "album_extended_preview"  ) { // Extended album view.
           $params['thumb_width'] = $params['extended_album_image_thumb_width'];
           $params['thumb_height'] = $params['extended_album_image_thumb_height'];
           $params['image_title'] = $params['extended_album_image_title'];
@@ -165,7 +164,7 @@ class BWGControllerSite {
           $params['mosaic_hor_ver'] = $params['extended_album_mosaic_hor_ver'];
           $params['resizable_mosaic'] = $params['extended_album_resizable_mosaic'];
           $params['mosaic_total_width'] = $params['extended_album_mosaic_total_width'];
-        } elseif (isset($params['masonry_album_thumb_width'])) {
+        } elseif ( $params["gallery_type"] ==  "album_masonry_preview" ) {
           $params['thumb_width'] = $params['masonry_album_image_thumb_width'];
           $params['image_column_number'] = $params['masonry_album_image_column_number'];
           $params['images_per_page'] = $params['masonry_album_images_per_page'];

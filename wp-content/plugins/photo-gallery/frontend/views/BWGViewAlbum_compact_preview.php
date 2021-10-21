@@ -3,7 +3,7 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
 
   private $gallery_view = FALSE;
 
-  public function display($params = array(), $bwg = 0) {
+  public function display($params = array(), $bwg = 0, $ajax = FALSE) {
     /* Gallery view class.*/
 	$gallery_type = 'Thumbnails';
 	if ( $params['gallery_view_type'] == 'masonry' ) {
@@ -53,25 +53,25 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
     if ( !WDWLibrary::elementor_is_active() ) {
       if ( !$params['ajax'] ) {
         if ( BWG()->options->use_inline_stiles_and_scripts ) {
-			wp_add_inline_style('bwg_frontend', $inline_style);
+			    wp_add_inline_style('bwg_frontend', $inline_style);
         }
         else {
-			echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
+			echo '<style id="bwg-style-' . sanitize_html_class($bwg) . '">' . $inline_style . '</style>';
         }
       }
     }
     else {
-      echo '<style id="bwg-style-' . $bwg . '">' . $inline_style . '</style>';
+      echo '<style id="bwg-style-' . sanitize_html_class($bwg) . '">' . $inline_style . '</style>';
     }
     ob_start();
 
     if ( $params['album_view_type'] != 'gallery' ) {
       ?>
-    <div data-max-count="<?php echo $params['items_col_num']; ?>"
-         data-thumbnail-width="<?php echo $params['compuct_album_thumb_width']; ?>"
-         data-bwg="<?php echo $bwg; ?>"
-         id="<?php echo $params['container_id']; ?>"
-         class="bwg-thumbnails bwg-container bwg-container-<?php echo $bwg; ?> bwg-album-thumbnails <?php echo $params['album_gallery_div_class']; ?>">
+    <div data-max-count="<?php echo esc_attr($params['items_col_num']); ?>"
+         data-thumbnail-width="<?php echo esc_attr($params['compuct_album_thumb_width']); ?>"
+         data-bwg="<?php echo esc_attr($bwg); ?>"
+         id="<?php echo esc_attr($params['container_id']); ?>"
+         class="bwg-thumbnails bwg-container bwg-container-<?php echo sanitize_html_class($bwg); ?> bwg-album-thumbnails <?php echo sanitize_html_class($params['album_gallery_div_class']); ?>">
       <?php
       if ( !$params['album_gallery_rows']['page_nav']['total'] ) {
         echo WDWLibrary::message(__('No results found.', BWG()->prefix), 'wd_error');
@@ -96,25 +96,25 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
         $enable_dynamic_url = (int) BWG()->options->front_ajax;
         ?>
         <div class="bwg-item">
-          <a class="bwg-a <?php echo $from !== "widget" ? 'bwg-album ' : ''; ?>bwg_album_<?php echo $bwg; ?>"
+          <a class="bwg-a <?php echo $from !== "widget" ? 'bwg-album ' : ''; ?>bwg_album_<?php echo sanitize_html_class($bwg); ?>"
              <?php echo ( ($enable_seo || $enable_dynamic_url) && $from !== "widget" ? "href='" . esc_url($href) . "'" : ""); ?>
              <?php echo $from === "widget" ? 'href="' . $row->permalink . '"' : ''; ?>
-             data-container_id="<?php echo $params['container_id']; ?>"
-             data-def_type="<?php echo $row->def_type; ?>"
-             data-album_gallery_id="<?php echo $params['album_gallery_id']; ?>"
-             data-alb_gal_id="<?php echo (($params['album_gallery_id'] != 0) ? $row->alb_gal_id : $row->id); ?>"
-             data-title="<?php echo htmlspecialchars(addslashes($row->name)); ?>"
-             data-bwg="<?php echo $bwg; ?>">
+             data-container_id="<?php echo esc_attr($params['container_id']); ?>"
+             data-def_type="<?php echo esc_attr($row->def_type); ?>"
+             data-album_gallery_id="<?php echo esc_attr($params['album_gallery_id']); ?>"
+             data-alb_gal_id="<?php echo (($params['album_gallery_id'] != 0) ? esc_attr($row->alb_gal_id) : esc_attr($row->id)); ?>"
+             data-title="<?php echo esc_attr($row->name); ?>"
+             data-bwg="<?php echo esc_attr($bwg); ?>">
             <?php if ( $params['compuct_album_title'] == 'show' && $theme_row->album_compact_thumb_title_pos == 'top' ) { echo $title; } ?>
             <div class="bwg-item0 <?php echo ($lazyload) ? 'lazy_loader': ''; ?>">
               <div class="bwg-item1 <?php echo $theme_row->album_compact_thumb_hover_effect == 'zoom' && $params['compuct_album_title'] == 'hover' ? 'bwg-zoom-effect' : ''; ?>">
                 <div class="bwg-item2">
                   <img class="skip-lazy <?php if( $lazyload ) { ?> bwg_lazyload <?php } ?>"
-                       data-width="<?php echo $image_thumb_width; ?>"
-                       data-height="<?php echo $image_thumb_height; ?>"
-                       data-original="<?php echo $row->preview_image; ?>"
-                       src="<?php if( !$lazyload ) { echo $row->preview_image; } else { echo BWG()->plugin_url."/images/lazy_placeholder.gif"; } ?>"
-                       alt="<?php echo $row->name; ?>" />
+                       data-width="<?php echo esc_attr($image_thumb_width); ?>"
+                       data-height="<?php echo esc_attr($image_thumb_height); ?>"
+                       data-src="<?php echo esc_attr($row->preview_image); ?>"
+                       src="<?php if( !$lazyload ) { echo esc_url($row->preview_image); } else { echo esc_url(BWG()->plugin_url."/images/lazy_placeholder.gif"); } ?>"
+                       alt="<?php echo esc_attr($row->name); ?>" />
                 </div>
                 <div class="<?php echo $theme_row->album_compact_thumb_hover_effect == 'zoom' && $params['compuct_album_title'] == 'hover' ? 'bwg-zoom-effect-overlay' : ''; ?>">
                   <?php if ( $params['compuct_album_title'] == 'hover' ) { echo $title; } ?>
@@ -137,10 +137,10 @@ class BWGViewAlbum_compact_preview extends BWGViewSite {
       }
     }
     ?>
-    <input type="hidden" id="bwg_album_breadcrumb_<?php echo $bwg; ?>" name="bwg_album_breadcrumb_<?php echo $bwg; ?>" value='<?php echo esc_attr($breadcrumb); ?>' />
+    <input type="hidden" id="bwg_album_breadcrumb_<?php echo sanitize_html_class($bwg); ?>" name="bwg_album_breadcrumb_<?php echo sanitize_html_class($bwg); ?>" value='<?php echo esc_attr($breadcrumb); ?>' />
     <?php
     $content = ob_get_clean();
-    if ( $params['ajax'] ) {/* Ajax response after ajax call for filters and pagination.*/
+    if ( $ajax ) {/* Ajax response after ajax call for filters and pagination.*/
       if ( $params['album_view_type'] != 'gallery' ) {
         parent::ajax_content($params, $bwg, $content);
       }

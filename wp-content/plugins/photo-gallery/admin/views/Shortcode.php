@@ -378,9 +378,11 @@ class ShortcodeView_bwg extends AdminView_bwg {
                 <div class="wd-box-content wd-width-100" id="tr_watermark_type">
                   <div class="wd-group">
                     <label class="wd-label"><?php _e('Advertisement type', BWG()->prefix); ?></label>
-                    <input type="radio" class="wd-radio" name="watermark_type" id="watermark_type_none" value="none" onClick="bwg_watermark('watermark_type_none')" <?php echo (BWG()->options->watermark_type == 'none') ? 'checked' : ''; ?> /><label for="watermark_type_none" class="wd-radio-label"><?php _e('None', BWG()->prefix); ?></label>
-                    <input type="radio" class="wd-radio" name="watermark_type" id="watermark_type_text" value="text" onClick="bwg_watermark('watermark_type_text')" <?php echo (BWG()->options->watermark_type == 'text') ? 'checked' : ''; ?> /><label for="watermark_type_text" class="wd-radio-label"><?php _e('Text', BWG()->prefix); ?></label>
-                    <input type="radio" class="wd-radio" name="watermark_type" id="watermark_type_image" value="image" onClick="bwg_watermark('watermark_type_image')" <?php echo (BWG()->options->watermark_type == 'image') ? 'checked' : ''; ?> /><label for="watermark_type_image" class="wd-radio-label"><?php _e('Image', BWG()->prefix); ?></label>
+                    <div class="bwg-flex">
+											<div><input type="radio" class="wd-radio" name="watermark_type" id="watermark_type_none" value="none" onClick="bwg_watermark('watermark_type_none')" <?php echo (BWG()->options->watermark_type == 'none') ? 'checked' : ''; ?> /><label for="watermark_type_none" class="wd-radio-label"><?php _e('None', BWG()->prefix); ?></label></div>
+											<div><input type="radio" class="wd-radio" name="watermark_type" id="watermark_type_text" value="text" onClick="bwg_watermark('watermark_type_text')" <?php echo (BWG()->options->watermark_type == 'text') ? 'checked' : ''; ?> /><label for="watermark_type_text" class="wd-radio-label"><?php _e('Text', BWG()->prefix); ?></label></div>
+											<div><input type="radio" class="wd-radio" name="watermark_type" id="watermark_type_image" value="image" onClick="bwg_watermark('watermark_type_image')" <?php echo (BWG()->options->watermark_type == 'image') ? 'checked' : ''; ?> /><label for="watermark_type_image" class="wd-radio-label"><?php _e('Image', BWG()->prefix); ?></label></div>
+                    </div>
                     <p class="description"><?php _e("Add Text or Image advertisement to your images with this option.", BWG()->prefix); ?></p>
                   </div>
                 </div>
@@ -423,10 +425,12 @@ class ShortcodeView_bwg extends AdminView_bwg {
                         }
                         ?>
                       </select>
-                      <input type="radio" class="wd-radio" name="watermark_google_fonts" id="watermark_google_fonts1" onchange="bwg_change_fonts('watermark_font', jQuery(this).attr('id'))" value="1" <?php if ($is_google_fonts) echo 'checked="checked"'; ?> />
-                      <label for="watermark_google_fonts1" id="watermark_google_fonts1_lbl" class="wd-radio-label"><?php _e('Google fonts', BWG()->prefix); ?></label>
-                      <input type="radio" class="wd-radio" name="watermark_google_fonts" id="watermark_google_fonts0" onchange="bwg_change_fonts('watermark_font', '')" value="0" <?php if (!$is_google_fonts) echo 'checked="checked"'; ?> />
-                      <label for="watermark_google_fonts0" id="watermark_google_fonts0_lbl" class="wd-radio-label"><?php _e('Default', BWG()->prefix); ?></label>
+                      <div class="bwg-flex">
+												<div><input type="radio" class="wd-radio" name="watermark_google_fonts" id="watermark_google_fonts1" onchange="bwg_change_fonts('watermark_font', jQuery(this).attr('id'))" value="1" <?php if ($is_google_fonts) echo 'checked="checked"'; ?> />
+												<label for="watermark_google_fonts1" id="watermark_google_fonts1_lbl" class="wd-radio-label"><?php _e('Google fonts', BWG()->prefix); ?></label></div>
+												<div><input type="radio" class="wd-radio" name="watermark_google_fonts" id="watermark_google_fonts0" onchange="bwg_change_fonts('watermark_font', '')" value="0" <?php if (!$is_google_fonts) echo 'checked="checked"'; ?> />
+												<label for="watermark_google_fonts0" id="watermark_google_fonts0_lbl" class="wd-radio-label"><?php _e('Default', BWG()->prefix); ?></label></div>
+                      </div>
                       <p class="description"><?php _e("Select the font family of the advertisement text.", BWG()->prefix); ?></p>
                     </div>
                   </div>
@@ -452,7 +456,7 @@ class ShortcodeView_bwg extends AdminView_bwg {
                   <div class="wd-box-content wd-width-100" id="tr_watermark_color">
                     <div class="wd-group">
                       <label class="wd-label" for="watermark_color"><?php _e('Advertisement color', BWG()->prefix); ?></label>
-                      <input type="text" name="watermark_color" id="watermark_color" value="<?php echo BWG()->options->watermark_color; ?>" class="color" />
+                      <input type="text" name="watermark_color" id="watermark_color" value="<?php echo BWG()->options->watermark_color; ?>" class="jscolor" />
                       <p class="description"><?php _e("Choose the color for the advertisement text on images.", BWG()->prefix); ?></p>
                     </div>
                   </div>
@@ -1547,6 +1551,14 @@ class ShortcodeView_bwg extends AdminView_bwg {
             }
             jQuery("#popup_filmstrip_height").val(short_code['popup_filmstrip_height']);
           }
+
+          if (short_code['show_image_counts'] == 1) {
+            jQuery("#show_image_counts_current_image_number_1").prop('checked', true);
+          }
+          else {
+            jQuery("#show_image_counts_current_image_number_0").prop('checked', true);
+          }
+
           if (short_code['popup_enable_ctrl_btn'] != undefined) {
             if (short_code['popup_enable_ctrl_btn'] == 1) {
               jQuery("#popup_enable_ctrl_btn_1").prop('checked', true);
@@ -1641,12 +1653,6 @@ class ShortcodeView_bwg extends AdminView_bwg {
               }
               else {
                 jQuery("#popup_enable_download_0").prop('checked', true);
-              }
-              if (short_code['show_image_counts'] == 1) {
-                jQuery("#show_image_counts_current_image_number_1").prop('checked', true);
-              }
-              else {
-                jQuery("#show_image_counts_current_image_number_0").prop('checked', true);
               }
               if (short_code['enable_loop'] == 1) {
                 jQuery("#enable_loop_1").prop('checked', true);
@@ -1825,6 +1831,7 @@ class ShortcodeView_bwg extends AdminView_bwg {
       }
 
       function bwg_insert_shortcode(content) {
+        jQuery(popup_cover_containers, parent.document).removeAttr("style");
         var page_builder_activated = bwg_before_shortcode_add_builder_editor();
 
         window.parent.window.jQuery(window.parent.document).trigger("onOpenShortcode");

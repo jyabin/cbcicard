@@ -59,14 +59,14 @@ class FilemanagerView {
     wp_print_styles('wp-auth-check');
     wp_print_styles('wp-pointer');
     ?>
-    <script src="<?php echo BWG()->plugin_url; ?>/filemanager/js/jq_uploader/jquery.iframe-transport.js?v=10.0.0"></script>
-    <script src="<?php echo BWG()->plugin_url; ?>/filemanager/js/jq_uploader/jquery.fileupload.js?v=10.0.0"></script>
+    <script src="<?php echo BWG()->plugin_url; ?>/filemanager/js/jq_uploader/jquery.iframe-transport.js?v=10.31.0"></script>
+    <script src="<?php echo BWG()->plugin_url; ?>/filemanager/js/jq_uploader/jquery.fileupload.js?v=10.31.0"></script>
     <script>
-	  var DS = "<?php echo addslashes('/'); ?>";
+	    var DS = "<?php echo addslashes('/'); ?>";
       var demo_message = "<?php echo addslashes(__('This option is disabled in demo.', BWG()->prefix)); ?>";
       var ajaxurl = "<?php echo wp_nonce_url( admin_url('admin-ajax.php'), 'addImages', 'bwg_nonce' ); ?>";
       var ajax_pagination_url = "<?php echo $ajax_pagination_url; ?>";
-	  var ajax_get_all_select_url = "<?php echo $ajax_get_all_select_url; ?>";
+	    var ajax_get_all_select_url = "<?php echo $ajax_get_all_select_url; ?>";
       var errorLoadingFile = "<?php echo __('File loading failed', BWG()->prefix); ?>";
       var warningRemoveItems = "<?php echo __('Are you sure you want to permanently remove selected items?', BWG()->prefix); ?>";
       var warningCancelUploads = "<?php echo __('This will cancel uploads. Continue?', BWG()->prefix); ?>";
@@ -74,9 +74,9 @@ class FilemanagerView {
       var messageEnterNewName = "<?php echo __('Enter new name', BWG()->prefix); ?>";
       var messageFilesUploadComplete = "<?php echo __('Processing uploaded files...', BWG()->prefix); ?>";
       var root = "<?php echo addslashes($this->controller->get_uploads_dir()); ?>";
-      var dir = "<?php echo (isset($_REQUEST['dir']) ? WDWLibrary::get('dir','','sanitize_text_field','REQUEST') : ''); ?>";
-      var dirUrl = "<?php echo $this->controller->get_uploads_url() . (isset($_REQUEST['dir']) ? WDWLibrary::get('dir','','sanitize_text_field','REQUEST') . '/' : ''); ?>";
-      var callback = "<?php echo (isset($_REQUEST['callback']) ? WDWLibrary::get('callback','','sanitize_text_field','REQUEST') : ''); ?>";
+      var dir = "<?php echo(isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) : ''); ?>";
+      var dirUrl = "<?php echo $this->controller->get_uploads_url() . (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) . '/' : ''); ?>";
+      var callback = "<?php echo (isset($_REQUEST['callback']) ? WDWLibrary::get('callback','','esc_js','REQUEST') : ''); ?>";
       var sortBy = "<?php echo $sort_by; ?>";
       var sortOrder = "<?php echo $sort_order; ?>";
       var page_per = "<?php echo $page_per; ?>";
@@ -86,11 +86,11 @@ class FilemanagerView {
     do_action( 'bwg_filemanager_scripts_after' );
     ?>
     <link href="<?php echo BWG()->plugin_url; ?>/filemanager/css/default.css?ver=<?php echo BWG()->plugin_version; ?>" type="text/css" rel="stylesheet">
-	<link href="<?php echo BWG()->plugin_url; ?>/filemanager/css/default_view_<?php echo $items_view; ?>.css?ver=<?php echo BWG()->plugin_version; ?>" type="text/css" rel="stylesheet">
-	<form id="adminForm" name="adminForm" action="" method="post" class="wp-core-ui">
+	  <link href="<?php echo BWG()->plugin_url; ?>/filemanager/css/default_view_<?php echo $items_view; ?>.css?ver=<?php echo BWG()->plugin_version; ?>" type="text/css" rel="stylesheet">
+	  <form id="adminForm" name="adminForm" action="" method="post" class="wp-core-ui">
       <?php wp_nonce_field( '', 'bwg_nonce' ); ?>
       <div id="wrapper">
-		<div id="file_manager">
+		    <div id="file_manager">
           <div class="ctrls_bar ctrls_bar_header">
             <div class="ctrls_left header_bar">
               <span class="dashicons dashicons-arrow-up-alt ctrl_bar_btn" onclick="onBtnUpClick(event, this);" title="<?php echo __('Up', BWG()->prefix); ?>"></span>
@@ -218,7 +218,7 @@ class FilemanagerView {
               <a id="add_selectid_img" title="<?php echo $add_image_btn; ?>" class="button button-primary button-large" onclick="window.parent.bwg_create_loading_block(); onBtnOpenClick(event, this);">
                 <div id="bwg_img_add"><?php echo $add_image_btn; ?></div>
               </a>
-              <a class="button button-secondary button-large" title="<?php _e('Cancel', BWG()->prefix); ?>" onclick="onBtnCancelClick(event, this);">
+              <a id="cancel_add_img" class="button button-secondary button-large" title="<?php _e('Cancel', BWG()->prefix); ?>" onclick="onBtnCancelClick(event, this);">
                 <div id="bwg_img_cancel"><?php _e('Cancel', BWG()->prefix); ?></div>
               </a>
             </div>
@@ -248,8 +248,8 @@ class FilemanagerView {
               <div id="btnBrowseContainer">
 				<div class="bwg-select-file-text"><?php _e('Drag files here', BWG()->prefix); ?><br><?php _e('or', BWG()->prefix); ?><br><span class="button"><?php _e('Select Files', BWG()->prefix); ?></span></div>
 				<?php
-				  $query_url = wp_nonce_url( admin_url('admin-ajax.php'), 'bwg_UploadHandler', 'bwg_nonce' );
-				  $query_url = add_query_arg(array('action' => 'bwg_UploadHandler', 'dir' => (isset($_REQUEST['dir']) ? WDWLibrary::get('dir','','sanitize_text_field','REQUEST') : '') . '/'), $query_url);
+				  $query_url = wp_nonce_url( admin_url('admin-ajax.php'), 'bwg_upl', 'bwg_nonce' );
+				  $query_url = add_query_arg(array('action' => 'bwg_upl', 'dir' => (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) : '') . '/'), $query_url);
 				?>
                 <input id="jQueryUploader" type="file" name="files[]"
 				   data-url="<?php echo $query_url; ?>"
@@ -271,12 +271,12 @@ class FilemanagerView {
         </div>
       </div>
       <input type="hidden" name="task" value="" />
-      <input type="hidden" name="extensions" value="<?php echo (isset($_REQUEST['extensions']) ? WDWLibrary::get('extensions','','sanitize_text_field','REQUEST') : '*'); ?>" />
-      <input type="hidden" name="callback" value="<?php echo (isset($_REQUEST['callback']) ? WDWLibrary::get('callback','','sanitize_text_field','REQUEST') : ''); ?>" />
+      <input type="hidden" name="extensions" value="jpg,jpeg,png,gif,svg" />
+      <input type="hidden" name="callback" value="<?php echo (isset($_REQUEST['callback']) ? WDWLibrary::get('callback','','esc_attr','REQUEST') : ''); ?>" />
       <input type="hidden" name="sort_by" value="<?php echo $sort_by; ?>" />
       <input type="hidden" name="sort_order" value="<?php echo $sort_order; ?>" />
       <input type="hidden" name="items_view" value="<?php echo $items_view; ?>" />
-      <input type="hidden" name="dir" value="<?php echo (isset($_REQUEST['dir']) ? str_replace('\\', '', (WDWLibrary::get('dir','','sanitize_text_field','REQUEST'))) : ''); ?>" />
+      <input type="hidden" name="dir" value="<?php echo (isset($_REQUEST['dir']) ? str_replace(array('\\', '../'), '', WDWLibrary::get('dir', '', 'sanitize_text_field', 'REQUEST')) : ''); ?>" />
       <input type="hidden" name="file_names" value="" />
       <input type="hidden" name="file_namesML" value="" />
       <input type="hidden" name="file_new_name" value="" />
@@ -314,7 +314,7 @@ class FilemanagerView {
 		jQuery("#jQueryUploader").fileupload({
 		  dataType: "json",
 		  dropZone: jQuery("#uploader_hitter"),
-		  limitConcurrentUploads: 10, // upload step by step
+		  limitConcurrentUploads: 5, // upload step by step
 		  acceptFileTypes: /(\.|\/)(jpe?g|gif|png|svg)$/i,
 		  submit: function (e, data) {
       localStorage.removeItem( "bwg_selected_images" );

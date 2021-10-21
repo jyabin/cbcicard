@@ -1,6 +1,27 @@
 var bwg_shortcode_type;
 
+/* Classes and ids of containers which are cover shortcode popup */
+var popup_cover_containers = '' +
+    '#adminmenuback:not(body.admin_page_shortcode_bwg #adminmenuback), ' +
+    '#adminmenuwrap:not(body.admin_page_shortcode_bwg #adminmenuwrap), ' +
+    '#wpadminbar:not(body.admin_page_shortcode_bwg #wpadminbar), ' +
+    '.interface-interface-skeleton__header, ' +
+    '.interface-interface-skeleton__secondary-sidebar, ' +
+    '.interface-interface-skeleton__footer, ' +
+    '.interface-interface-skeleton__sidebar';
 jQuery(function() {
+  /* Adding class to sections in gutenberb which are break full with of popup */
+  jQuery(popup_cover_containers, parent.document).css("display","none");
+  /* Trigger click to close gutenberg sidebar menu when click on PG shortcode (work with Classic & Gutenberg Editors) */
+  jQuery(".media-modal-close, #TB_closeWindowButton", parent.document).on("click", function() {
+    jQuery(popup_cover_containers, parent.document).removeAttr("style");
+  });
+  /* close gutenberg sidebar menu when press ESC button in Classic editor */
+  if ( jQuery("body", parent.document).hasClass('modal-open') ) {
+    jQuery(parent.document).on('keyup', function(e) {
+      if ( e.key == "Escape" ) jQuery(popup_cover_containers, parent.document).removeAttr("style");
+    });
+  }
   jQuery(".bwg_tw-container").parents().find(".wrap.wd-wrap-ajax").css({
     'height': 'calc(100% - 55px)'
   });
@@ -485,7 +506,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery(".wd-free-msg").show();
-      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_premium_text);
+      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_shortcode_premium_text.bwg_premium_text);
       jQuery(".pro-views-img").attr('src',pro_img_url);
       jQuery(".button-demo").attr('href', pro_demo_link );
       if ( jQuery(".wd-free-msg").length != 0 ) {
@@ -499,7 +520,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery(".wd-free-msg").show();
-      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_premium_text);
+      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_shortcode_premium_text.bwg_premium_text);
       jQuery(".pro-views-img").attr('src',pro_img_url);
       jQuery(".button-demo").attr('href', pro_demo_link );
       if ( jQuery(".wd-free-msg").length != 0 ) {
@@ -542,7 +563,7 @@ function bwg_gallery_type(gallery_type) {
 	case 'album_masonry_preview': {
       jQuery("#tr_album").css('display', '');
       jQuery(".wd-free-msg").show();
-      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_premium_text);
+      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_shortcode_premium_text.bwg_premium_text);
       jQuery(".pro-views-img").attr('src',pro_img_url);
       jQuery(".button-demo").attr('href', pro_demo_link );
       if ( jQuery(".wd-free-msg").length != 0 ) {
@@ -555,7 +576,7 @@ function bwg_gallery_type(gallery_type) {
       jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery(".wd-free-msg").show();
-      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_premium_text);
+      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_shortcode_premium_text.bwg_premium_text);
       jQuery(".pro-views-img").attr('src',pro_img_url);
       jQuery(".button-demo").attr('href', pro_demo_link );
       if ( jQuery(".wd-free-msg").length != 0 ) {
@@ -568,7 +589,7 @@ function bwg_gallery_type(gallery_type) {
 	  jQuery("#tr_gallery").css('display', '');
       jQuery("#tr_tag").css('display', '');
       jQuery(".wd-free-msg").show();
-      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_premium_text);
+      jQuery(".upgrade-to-pro-title").html( gallery_type_name + bwg_shortcode_premium_text.bwg_premium_text);
       jQuery(".pro-views-img").attr('src',pro_img_url);
       jQuery(".button-demo").attr('href', pro_demo_link );
       if ( jQuery(".wd-free-msg").length != 0 ) {
